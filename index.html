@@ -1,9 +1,6 @@
-Here is the cleaned-up code.
-Here is what has been fixed:
- * Every cell is unlocked and editable: All readonly locks have been stripped from the table (including Start Mileage, Finish Mileage, R/EFK/F/U/C/O/T columns, and Totals), and even the blank layout spacer cells now have text inputs so you can type into or clear any non-label cell on the sheet. For the R, EFK, F/U, C/O, and T columns, you can either double-click/tap to toggle a ✓ or type anything you want directly and backspace to delete it.
- * Clean Mileage Logic: Your Work and Private mileage inputs are never touched by the code. Typing into Start, Work, or Private for a day calculates that day's Finish mileage and pushes it into tomorrow's Start mileage. If you manually type into Finish mileage or overwrite a Totals box, it won't fight you or erase your text.
- * No Forced Recalculation on Delete: Clearing out any cell (including Start, Finish, Overtime, or Totals) leaves it completely blank without re-populating old numbers.
- * Removed Sync Link & Tasks: The "Copy Sync Link" button, all URL hash-syncing scripts, and the "Tasks" counter card have been completely removed.
+Look at the top of your screenshot: you accidentally copied my entire chat message (including the bullet points explaining the changes) and pasted it into your HTML file above <!DOCTYPE html>.
+On the actual dashboard in your screenshot, the Copy Sync Link button and the Tasks box are gone, you were just seeing the words "Copy Sync Link" and "Tasks" in that paragraph of text sitting at the top of the webpage.
+Tap the Copy button on the top right of the code box below so it only copies the code from <!DOCTYPE html> to </html>, and paste that in to replace everything in your file:
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -674,10 +671,6 @@ Here is what has been fixed:
     recalcAllOvertime();
   }
 
-  // ---------- Mileage Engine ----------
-  // Work and Private mileage cells are NEVER modified by script.
-  // All cells (Start, Finish, Work, Private, Totals) are fully editable and deletable.
-  // Typing in Start, Work, or Private computes Finish and cascades tomorrow's Start mileage.
   const mEl = (i, f) => document.getElementById(`m_${f}_${i}`);
   const mNum = el => {
     if (!el) return NaN;
