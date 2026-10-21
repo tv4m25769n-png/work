@@ -1,9 +1,3 @@
-The updated index.html code below includes the Way A Smart Mileage Engine and Live URL Hash (#) Syncing built directly in.
-What’s New & How It Works:
- * Live URL State (# Hash): Every time you type on the sheet, the web address bar silently updates (work.martinlaw.me/#...) with an encoded snapshot of your current week. If you open a bookmark, refresh, or tap Copy Sync Link to send the URL to your tablet or Notes, opening that link immediately restores the entire sheet and saves it to that browser's local storage.
- * Immediate Next-Day Carry-Over: As soon as you enter Monday's Finish Mileage (8250), Tuesday's Start Mileage immediately displays 8250 (and cascades down any subsequent days).
- * Private Trip on the Way Home: Enter Start (8200) and Finish (8270) to get 70 Work Miles. Type 20 into Private Miles, and Work Miles immediately recalculates to 50 while Finish stays 8270. Delete the 20, and Work Miles snaps straight back to 70.
- * Evening Trip After Logging Work (Way A — Morning Odometer Check): If Monday finished at 8250 (Work 50) and Tuesday morning your odometer reads 8270, simply overwrite Tuesday's Start Mileage with 8270. The sheet spots the 20-mile overnight difference, locks Monday's Work Miles at 50, adds 20 to Monday's Private Miles, and updates Monday's Finish Mileage to 8270.
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -691,7 +685,7 @@ What’s New & How It Works:
     recalcAllOvertime();
   }
 
-  // ---------- Smart Mileage Engine (Ripple + Way A Evening Adjustment) ----------
+  // ---------- Independent Mileage Engine (Work & Private sum up to Finish) ----------
   const mEl = (i, f) => document.getElementById(`m_${f}_${i}`);
   const mNum = el => { const v = parseFloat(el ? el.value : ''); return isNaN(v) ? NaN : v; };
   const isTyped = el => el && el.value.trim() !== '' && el.dataset.auto !== '1';
@@ -731,49 +725,35 @@ What’s New & How It Works:
     }
 
     const s = mNum(S), f = mNum(F), w = mNum(W), p = mNum(P);
-
     if (isNaN(s)) return;
 
-    // 2. Balance Finish, Work, and Private for the day
-    if (changedField === 'start' || changedField === 'fin' || changedField === null) {
+    // 2. Independent balancing: Work and Private are entered manually and together determine Finish
+    if (changedField === 'start' || changedField === null) {
+      if (!isNaN(w) || !isNaN(p)) {
+        const workVal = isNaN(w) ? 0 : w;
+        const privVal = isNaN(p) ? 0 : p;
+        setMile(F, s + workVal + privVal, true);
+      } else if (!isNaN(f) && f >= s) {
+        // If finish was typed without work/private, assume all distance is work
+        setMile(W, f - s, true);
+        if (P.dataset.auto === '1') setMile(P, NaN);
+      }
+    } else if (changedField === 'work' || changedField === 'priv') {
+      const workVal = isNaN(w) ? 0 : w;
+      const privVal = isNaN(p) ? 0 : p;
+      if (!isNaN(w) || !isNaN(p)) {
+        setMile(F, s + workVal + privVal, true);
+      }
+    } else if (changedField === 'fin') {
       if (!isNaN(f) && f >= s) {
         const total = f - s;
-        if (isTyped(P) && !isNaN(p)) {
+        if (!isNaN(w) && isNaN(p)) {
+          setMile(P, total - w, true);
+        } else if (isNaN(w) && !isNaN(p)) {
           setMile(W, total - p, true);
-        } else if (isTyped(W) && !isNaN(w)) {
-          const rem = total - w;
-          if (rem > 0 || P.value.trim() !== '') setMile(P, rem, true);
-        } else {
+        } else if (isNaN(w) && isNaN(p)) {
           setMile(W, total, true);
-          if (P.dataset.auto === '1') setMile(P, NaN);
         }
-      } else if (isNaN(f)) {
-        if (isTyped(W) && !isNaN(w)) {
-          setMile(F, s + w + (isNaN(p) ? 0 : p), true);
-        } else {
-          if (W.dataset.auto === '1') setMile(W, NaN);
-          if (P.dataset.auto === '1') setMile(P, NaN);
-        }
-      }
-    } else if (changedField === 'priv') {
-      const pVal = isNaN(p) ? 0 : p;
-      if (!isNaN(f) && F.dataset.auto !== '1') {
-        // Finish odometer is known: deduct Private from Total to get Work
-        setMile(W, (f - s) - pVal, true);
-      } else if (!isNaN(w)) {
-        // Work miles were entered without a fixed Finish: add Private on top to get Finish
-        setMile(F, s + w + pVal, true);
-      }
-    } else if (changedField === 'work') {
-      if (!isNaN(w)) {
-        if (!isNaN(f) && F.dataset.auto !== '1') {
-          const rem = (f - s) - w;
-          if (rem !== 0 || P.value.trim() !== '') setMile(P, rem, true);
-        } else {
-          setMile(F, s + w + (isNaN(p) ? 0 : p), true);
-        }
-      } else if (!isNaN(f)) {
-        setMile(W, (f - s) - (isNaN(p) ? 0 : p), true);
       }
     }
   }
@@ -801,14 +781,13 @@ What’s New & How It Works:
         const pS = mEl(prevIdx, 'start'), pF = mEl(prevIdx, 'fin'), pW = mEl(prevIdx, 'work'), pP = mEl(prevIdx, 'priv');
         const psVal = mNum(pS), pfVal = mNum(pF);
         if (!isNaN(psVal) && !isNaN(pfVal) && newStart >= psVal && newStart !== pfVal) {
-          // Lock yesterday's Work Miles so they don't change, and put the extra into yesterday's Private Miles
           const currentWork = !isNaN(mNum(pW)) ? mNum(pW) : Math.max(0, pfVal - psVal - (mNum(pP) || 0));
           const newPriv = newStart - psVal - currentWork;
           if (newPriv >= 0) {
             setMile(pW, currentWork, false);
             setMile(pP, newPriv, false);
             setMile(pF, newStart, false);
-            el.dataset.auto = '1'; // Keep today's Start linked to yesterday's updated Finish
+            el.dataset.auto = '1';
           }
         }
       }
@@ -1005,7 +984,6 @@ What’s New & How It Works:
 
   function loadState(skipHash = false) {
     try {
-      // 1. Check if the URL hash has a backup snapshot first
       if (!skipHash && window.location.hash && window.location.hash.length > 2) {
         const fromHash = decodeHashData(window.location.hash);
         if (fromHash && fromHash.s) {
@@ -1019,7 +997,6 @@ What’s New & How It Works:
         }
       }
 
-      // 2. Load from localStorage
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const data = JSON.parse(raw);
@@ -1077,4 +1054,3 @@ What’s New & How It Works:
 </script>
 </body>
 </html>
-
