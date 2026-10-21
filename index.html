@@ -1,12 +1,3 @@
-Let's take a step back and look at what is going wrong in that video.
-When you typed into Work Miles or Private Miles, the input box was fighting with you, losing focus, resetting to 0, or jumping around because the oninput handler on those inputs (recalcMileage(0, 'work')) was triggering a cascade that wiped or recalculated the value while your finger was still typing.
-Furthermore, Nurture's physical paper form handles mileage as a straightforward table where Start + Work + Private = Finish, and Next Day's Start = Today's Finish. It doesn't need complicated background algebra—it just needs to add up what you type and roll the odometer forward.
-What I am fixing right now in this version:
- * Zero Interference: When you type a number into Work Miles or Private Miles, the script never clears it or changes it out from under you.
- * Clean Math: Finish Mileage is simply Start + Work + Private.
- * Smooth Next-Day Carry-Over: When Finish is calculated, the next day's Start instantly updates to match it.
- * No Focus Loss / Glitching: Removed the aggressive multi-cell recalculation loops that were causing the cursor to jump and fields to reset while typing on mobile.
-Here is the clean, stable code. Copy this into your index.html, do a hard refresh in Safari, and test typing into your mileage cells:
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -78,7 +69,7 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
   .r-center { font-weight: normal; text-align: center; }
   .r-left { font-weight: normal; text-align: left; padding-left: 3px; }
   .small-notice { font-weight: bold; text-align: center; font-size: 8px; }
-  input.cell-in { width: 100%; height: 100%; border: none; outline: none; background: transparent; font-family: Arial, sans-serif; font-size: 9.5px; color: #000; text-align: center; padding: 0 1px; margin: 0; }
+  input.cell-in { width: 100%; height: 100%; border: none; outline: none; background: transparent; font-family: Arial, sans-serif; font-size: 9.5px; color: #000; text-align: center; padding: 0 1px; margin: 0; border-radius: 0; }
   input.cell-in.left { text-align: left; }
   input.cell-in.bold { font-weight: bold; }
   input.cell-in.bad { color: #dc2626; }
@@ -195,61 +186,61 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
       <tr><td></td><td class="b-center">Date</td><td colspan="2" class="b-center">Start Mileage</td><td colspan="2" class="b-center">Finish Mileage</td><td class="b-center">Work Miles</td><td class="b-center">Private Miles</td></tr>
       <tr>
         <td class="b-left">Mon</td><td><input type="text" id="m_date_0" class="cell-in weekly" inputmode="numeric" oninput="autoFormatDate(this); recalcAllOvertime()" placeholder="DD/MM"></td>
-        <td colspan="2"><input type="text" id="m_start_0" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(0)"></td>
-        <td colspan="2"><input type="text" id="m_fin_0" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(0)"></td>
-        <td><input type="text" id="m_work_0" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(0)"></td>
-        <td><input type="text" id="m_priv_0" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(0)"></td>
+        <td colspan="2"><input type="text" id="m_start_0" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td colspan="2"><input type="text" id="m_fin_0" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_work_0" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td><input type="text" id="m_priv_0" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
       </tr>
       <tr>
         <td colspan="3" rowspan="3" class="box-label">Week commencing<input type="text" id="f_wc" class="cell-in header-box-input weekly persist" inputmode="numeric" oninput="autoFormatDate(this); autoFillWeekDates()" placeholder="DD/MM/YY"></td>
         <td class="b-left">Tue</td><td><input type="text" id="m_date_1" class="cell-in weekly" inputmode="numeric" oninput="autoFormatDate(this); recalcAllOvertime()"></td>
-        <td colspan="2"><input type="text" id="m_start_1" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(1)"></td>
-        <td colspan="2"><input type="text" id="m_fin_1" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(1)"></td>
-        <td><input type="text" id="m_work_1" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(1)"></td>
-        <td><input type="text" id="m_priv_1" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(1)"></td>
+        <td colspan="2"><input type="text" id="m_start_1" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td colspan="2"><input type="text" id="m_fin_1" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_work_1" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td><input type="text" id="m_priv_1" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
       </tr>
       <tr>
         <td class="b-left">Wed</td><td><input type="text" id="m_date_2" class="cell-in weekly" inputmode="numeric" oninput="autoFormatDate(this); recalcAllOvertime()"></td>
-        <td colspan="2"><input type="text" id="m_start_2" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(2)"></td>
-        <td colspan="2"><input type="text" id="m_fin_2" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(2)"></td>
-        <td><input type="text" id="m_work_2" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(2)"></td>
-        <td><input type="text" id="m_priv_2" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(2)"></td>
+        <td colspan="2"><input type="text" id="m_start_2" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td colspan="2"><input type="text" id="m_fin_2" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_work_2" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td><input type="text" id="m_priv_2" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
       </tr>
       <tr>
         <td class="b-left">Thu</td><td><input type="text" id="m_date_3" class="cell-in weekly" inputmode="numeric" oninput="autoFormatDate(this); recalcAllOvertime()"></td>
-        <td colspan="2"><input type="text" id="m_start_3" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(3)"></td>
-        <td colspan="2"><input type="text" id="m_fin_3" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(3)"></td>
-        <td><input type="text" id="m_work_3" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(3)"></td>
-        <td><input type="text" id="m_priv_3" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(3)"></td>
+        <td colspan="2"><input type="text" id="m_start_3" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td colspan="2"><input type="text" id="m_fin_3" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_work_3" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td><input type="text" id="m_priv_3" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
       </tr>
       <tr>
         <td colspan="3" rowspan="3" class="box-label">Team Leader<input type="text" id="f_tl" class="cell-in header-box-input persist"></td>
         <td class="b-left">Fri</td><td><input type="text" id="m_date_4" class="cell-in weekly" inputmode="numeric" oninput="autoFormatDate(this); recalcAllOvertime()"></td>
-        <td colspan="2"><input type="text" id="m_start_4" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(4)"></td>
-        <td colspan="2"><input type="text" id="m_fin_4" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(4)"></td>
-        <td><input type="text" id="m_work_4" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(4)"></td>
-        <td><input type="text" id="m_priv_4" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(4)"></td>
+        <td colspan="2"><input type="text" id="m_start_4" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td colspan="2"><input type="text" id="m_fin_4" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_work_4" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td><input type="text" id="m_priv_4" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
       </tr>
       <tr>
         <td class="b-left">Sat</td><td><input type="text" id="m_date_5" class="cell-in weekly" inputmode="numeric" oninput="autoFormatDate(this); recalcAllOvertime()"></td>
-        <td colspan="2"><input type="text" id="m_start_5" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(5)"></td>
-        <td colspan="2"><input type="text" id="m_fin_5" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(5)"></td>
-        <td><input type="text" id="m_work_5" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(5)"></td>
-        <td><input type="text" id="m_priv_5" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(5)"></td>
+        <td colspan="2"><input type="text" id="m_start_5" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td colspan="2"><input type="text" id="m_fin_5" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_work_5" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td><input type="text" id="m_priv_5" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
       </tr>
       <tr>
         <td class="b-left">Sun</td><td><input type="text" id="m_date_6" class="cell-in weekly" inputmode="numeric" oninput="autoFormatDate(this); recalcAllOvertime()"></td>
-        <td colspan="2"><input type="text" id="m_start_6" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(6)"></td>
-        <td colspan="2"><input type="text" id="m_fin_6" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(6)"></td>
-        <td><input type="text" id="m_work_6" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(6)"></td>
-        <td><input type="text" id="m_priv_6" class="cell-in weekly" inputmode="numeric" oninput="recalcMileage(6)"></td>
+        <td colspan="2"><input type="text" id="m_start_6" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td colspan="2"><input type="text" id="m_fin_6" class="cell-in weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_work_6" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
+        <td><input type="text" id="m_priv_6" class="cell-in weekly" inputmode="decimal" oninput="recalcMileage()"></td>
       </tr>
       <tr>
         <td colspan="5"></td>
         <td colspan="2" class="b-left">TOTALS</td>
-        <td colspan="2"><input type="text" id="m_tot_fin" class="cell-in bold weekly" inputmode="numeric"></td>
-        <td><input type="text" id="m_tot_work" class="cell-in bold weekly" inputmode="numeric"></td>
-        <td><input type="text" id="m_tot_priv" class="cell-in bold weekly" inputmode="numeric"></td>
+        <td colspan="2"><input type="text" id="m_tot_fin" class="cell-in bold weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_tot_work" class="cell-in bold weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="m_tot_priv" class="cell-in bold weekly" readonly tabindex="-1"></td>
       </tr>
       <tr>
         <td colspan="3" class="small-notice">PLEASE CIRCLE DAYS COVERED FOR ON CALL ALLOWANCE</td>
@@ -272,13 +263,13 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
       <tr>
         <td></td><td></td>
         <td class="r-left">TOTALS</td>
-        <td><input type="text" id="tot_r" class="cell-in bold weekly" inputmode="numeric"></td>
-        <td><input type="text" id="tot_efk" class="cell-in bold weekly" inputmode="numeric"></td>
-        <td><input type="text" id="tot_fu" class="cell-in bold weekly" inputmode="numeric"></td>
-        <td><input type="text" id="tot_co" class="cell-in bold weekly" inputmode="numeric"></td>
-        <td><input type="text" id="tot_t" class="cell-in bold weekly" inputmode="numeric"></td>
+        <td><input type="text" id="tot_r" class="cell-in bold weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="tot_efk" class="cell-in bold weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="tot_fu" class="cell-in bold weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="tot_co" class="cell-in bold weekly" readonly tabindex="-1"></td>
+        <td><input type="text" id="tot_t" class="cell-in bold weekly" readonly tabindex="-1"></td>
         <td></td><td></td>
-        <td><input type="text" id="tot_ot" class="cell-in bold weekly" inputmode="decimal"></td>
+        <td><input type="text" id="tot_ot" class="cell-in bold weekly" readonly tabindex="-1"></td>
       </tr>
     </table>
   </div>
@@ -693,54 +684,47 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
     recalcAllOvertime();
   }
 
-  // ---------- Stable Independent Mileage Engine ----------
+  // ---------- Mileage engine ----------
+  // You only ever type into: Monday's Start, and each day's Work + Private.
+  // Work/Private cells are NEVER written to by the script.
+  // Finish = Start + Work + Private (read-only, calculated).
+  // Next worked day's Start = previous Finish (read-only, calculated).
   const mEl = (i, f) => document.getElementById(`m_${f}_${i}`);
   const mNum = el => { const v = parseFloat(el ? el.value : ''); return isNaN(v) ? NaN : v; };
   const r1 = v => Math.round(v * 10) / 10;
 
   function setMile(el, v) {
     if (!el) return;
-    if (isNaN(v)) { el.value = ''; return; }
-    el.value = r1(v);
+    el.value = isNaN(v) ? '' : String(r1(v));
   }
 
-  function solveDay(i) {
-    const S = mEl(i, 'start'), F = mEl(i, 'fin'), W = mEl(i, 'work'), P = mEl(i, 'priv');
-
-    // 1. Auto-fill Start Mileage from previous day's Finish Mileage
-    if (i > 0) {
-      const prevFin = mNum(mEl(i - 1, 'fin'));
-      const curStart = mNum(S);
-      if (!isNaN(prevFin) && (isNaN(curStart) || curStart === prevFin)) {
-        setMile(S, prevFin);
-      }
-    } else if (i === 0 && S.value.trim() === '') {
+  function solveAllMileage(applyCarry) {
+    const S0 = mEl(0, 'start');
+    // Only on load / new week: pre-fill Monday's Start from last week's final odometer
+    if (applyCarry && S0.value.trim() === '') {
       const carry = parseFloat(localStorage.getItem(CARRY_KEY));
-      if (!isNaN(carry)) setMile(S, carry);
+      if (!isNaN(carry)) S0.value = String(r1(carry));
     }
 
-    const s = mNum(S), w = mNum(W), p = mNum(P);
-    if (!isNaN(s)) {
-      // 2. Finish = Start + Work + Private (Independent and non-destructive)
-      const workVal = isNaN(w) ? 0 : w;
-      const privVal = isNaN(p) ? 0 : p;
-      if (!isNaN(w) || !isNaN(p)) {
-        setMile(F, s + workVal + privVal);
+    let odo = mNum(S0); // running odometer
+    for (let i = 0; i < 7; i++) {
+      const w = mNum(mEl(i, 'work'));
+      const p = mNum(mEl(i, 'priv'));
+      const worked = !isNaN(w) || !isNaN(p);
+
+      if (!isNaN(odo) && worked) {
+        if (i > 0) setMile(mEl(i, 'start'), odo);
+        odo = r1(odo + (isNaN(w) ? 0 : w) + (isNaN(p) ? 0 : p));
+        setMile(mEl(i, 'fin'), odo);
+      } else {
+        if (i > 0) mEl(i, 'start').value = '';
+        mEl(i, 'fin').value = '';
       }
     }
-  }
-
-  function recalcMileage(dayIdx) {
-    for (let i = dayIdx; i < 7; i++) {
-      solveDay(i);
-    }
     recalcMileageTotals();
   }
 
-  function solveAllMileage() {
-    for (let i = 0; i < 7; i++) solveDay(i);
-    recalcMileageTotals();
-  }
+  function recalcMileage() { solveAllMileage(false); }
 
   function recalcMileageTotals() {
     let workSum = 0, privSum = 0, hasWork = false, hasPriv = false;
@@ -748,8 +732,8 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
 
     for (let i = 0; i < 7; i++) {
       const w = mNum(mEl(i, 'work')), p = mNum(mEl(i, 'priv')), f = mNum(mEl(i, 'fin'));
-      if (!isNaN(w) && w >= 0) { workSum += w; hasWork = true; }
-      if (!isNaN(p) && p >= 0) { privSum += p; hasPriv = true; }
+      if (!isNaN(w)) { workSum += w; hasWork = true; }
+      if (!isNaN(p)) { privSum += p; hasPriv = true; }
       if (!isNaN(f)) lastValidFin = f;
     }
 
@@ -812,8 +796,6 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
     for (let r = 0; r < TOTAL_LOG_ROWS; r++) {
       if (document.getElementById(`r${r}_c1`)?.value.trim()) sitesLogged++;
     }
-    let onCallCount = 0;
-    ['d_fri', 'd_sat', 'd_sun', 'd_mon'].forEach(id => { if (document.getElementById(id)?.checked) onCallCount++; });
 
     const targetDays = Math.max(5, daysWithWork);
     const estWorkMiles = daysWithWork > 0 ? Math.round((workMiles / daysWithWork) * targetDays) : 0;
@@ -831,7 +813,6 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
     setText('pred_tasks', `${sitesLogged} site${sitesLogged === 1 ? '' : 's'} logged`);
     setText('cnt_total_hrs', fmtHrs(totalHoursVal));
     setText('pred_contract', `${timedDays} day${timedDays === 1 ? '' : 's'} · −${breakMins}m break`);
-    setText('cnt_oncall', onCallCount);
   }
 
   function readCustomSites() {
@@ -938,12 +919,12 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
       }
 
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
+      if (!raw) { solveAllMileage(true); return; }
       const data = JSON.parse(raw);
       resetWeekly();
       if (data.inputs) Object.keys(data.inputs).forEach(id => { const el = document.getElementById(id); if (el) el.value = data.inputs[id]; });
       if (data.checks) Object.keys(data.checks).forEach(id => { const el = document.getElementById(id); if (el) el.checked = !!data.checks[id]; });
-      solveAllMileage();
+      solveAllMileage(true);
       updateAllTotals();
     } catch (e) {}
   }
@@ -959,7 +940,7 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
       try { localStorage.setItem(CARRY_KEY, String(r1(lastFin))); } catch (e) {}
     }
     resetWeekly();
-    solveAllMileage();
+    solveAllMileage(true);
     updateAllTotals();
     saveState();
   }
@@ -993,4 +974,3 @@ Here is the clean, stable code. Copy this into your index.html, do a hard refres
 </script>
 </body>
 </html>
-
