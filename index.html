@@ -1,400 +1,120 @@
 
-<!DOCTYPE html>
-<html lang="en-GB">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Martin Law — Work Hub</title>
+<!-- FULL A4 PAGE LAYOUT FIX -->
 <style>
-*{box-sizing:border-box}
-:root{font-family:Arial,Helvetica,sans-serif;color-scheme:light}
-body{margin:0;background:#0f172a;color:#111827}
-button,input,select{font-family:inherit}
-button{cursor:pointer}
-#pin_screen{position:fixed;inset:0;z-index:99;display:flex;align-items:center;justify-content:center;background:#0f172a;padding:20px}
-.pin-card{width:min(100%,340px);padding:28px 24px;text-align:center;background:#1e293b;color:#f8fafc;border-radius:14px;border:1px solid #334155}
-.pin-card h2{font-size:19px;color:#38bdf8;margin:0 0 8px}
-.pin-card p{font-size:12px;color:#cbd5e1}
-.pin-input{width:170px;margin:12px auto;font-size:26px;letter-spacing:9px;text-align:center;padding:11px;background:#0f172a;border:1px solid #475569;border-radius:8px;color:#fff}
-.pin-btn{display:block;width:100%;padding:12px;background:#059669;border:0;border-radius:7px;color:#fff;font-weight:bold}
-#pin_err{min-height:20px;margin-top:12px;color:#fca5a5;font-size:12px}
-#hub_view{display:none;max-width:530px;margin:32px auto;padding:18px;color:#fff}
-.hub-header{text-align:center;margin-bottom:26px}
-.hub-header h1{margin:0 0 5px;font-size:23px}
-.hub-header small{color:#38bdf8}
-.hub-btn{display:flex;width:100%;align-items:center;justify-content:space-between;padding:18px;text-align:left;border:1px solid #334155;border-radius:12px;background:#1e293b;color:white}
-.hub-btn strong{display:block;color:#34d399;font-size:16px;margin-bottom:5px}
-.hub-btn small{color:#cbd5e1}
-.hub-footer{display:flex;justify-content:center;gap:22px;margin-top:25px}
-.text-btn{border:0;background:transparent;text-decoration:underline;color:#cbd5e1;font-size:12px}
-#timesheet_view{display:none;min-height:100vh;background:#e5e7eb;padding:10px}
-.dashboard{max-width:900px;margin:0 auto 12px;padding:12px;border-radius:10px;background:#111827;color:#f9fafb}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid #374151}
-.topbar strong{color:#34d399;font-size:13px}
-.actions{display:flex;flex-wrap:wrap;gap:6px}
-.btn{padding:8px 10px;border:0;border-radius:5px;color:#fff;font-size:11px;font-weight:700}
-.blue{background:#2563eb}
-.green{background:#059669}
-.purple{background:#6d28d9}
-.grey{background:#374151}
-.counter-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:10px;text-align:center}
-.counter-card{padding:8px 4px;min-width:0;border:1px solid #374151;border-radius:7px;background:#1f2937}
-.counter-label{font-size:10px;color:#cbd5e1;text-transform:uppercase}
-.counter-val{font-size:17px;font-weight:700;margin-top:3px}
-.counter-sub{font-size:10px;color:#fbbf24;margin-top:3px;overflow-wrap:anywhere}
-.rate-box{margin-top:4px;display:flex;justify-content:center;align-items:center;gap:3px}
-.rate-box input{width:49px}
-.rate-box select{width:54px}
-.rate-box input,.rate-box select{min-width:0;border:1px solid #64748b;border-radius:3px;background:#0f172a;color:#fff;font-size:11px;padding:2px}
-#site_drawer{display:none;border-top:1px solid #374151;margin-top:12px;padding-top:12px}
-.site-add-row{display:flex;gap:6px;flex-wrap:wrap}
-.site-add-row input{min-width:70px;flex:1;padding:8px;border:1px solid #64748b;border-radius:4px;background:#1f2937;color:#fff}
-.site-add-row input:first-child{flex:3}
-#site_tags_list{display:flex;flex-wrap:wrap;gap:5px;max-height:130px;overflow-y:auto;margin-top:10px}
-.site-tag{padding:5px 7px;background:#374151;border-radius:14px;font-size:10px}
-.site-tag button{color:#fca5a5;background:transparent;border:0;font-weight:700;margin-left:4px}
-.notice{font-size:11px;color:#cbd5e1;margin:8px 0 0}
-#custom_ac{display:none;position:absolute;z-index:50;max-height:200px;overflow-y:auto;background:#1e293b;border:1px solid #64748b;border-radius:5px;box-shadow:0 5px 14px #0006;color:#fff}
-.ac-item{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;font-size:12px;cursor:pointer;border-bottom:1px solid #334155}
-.ac-item:hover{background:#2563eb}
-.ac-zone{color:#7dd3fc;white-space:nowrap}
-.sheet-page{width:210mm;min-height:297mm;margin:0 auto 18px;padding:10mm;background:#fff;box-shadow:0 4px 12px #0002}
-#page2_container.empty-page2{display:none}
-#page2_container.empty-page2.manually-open{display:block}
-.page-label{color:#475569;font-size:11px;margin-bottom:6px}
-table.timesheet{width:100%;table-layout:fixed;border-collapse:collapse;border:1.2px solid #111}
-.timesheet td,.timesheet th{border:1px solid #222;height:21px;font-size:9px;line-height:1.15;padding:1px 3px;vertical-align:middle;white-space:nowrap;overflow:hidden}
-.timesheet th{font-weight:700;text-align:center}
-.timesheet .title-cell{text-align:center;font-size:12px;font-weight:700;height:24px}
-.timesheet .box-label{text-align:center;vertical-align:top;padding:4px}
-.timesheet .bold{text-align:center;font-weight:700}
-.timesheet .left{text-align:left}
-.timesheet .small-notice{font-size:8px;font-weight:700;text-align:center;white-space:normal}
-.timesheet .log-row td{height:27px;padding:0 2px}
-.timesheet input.cell-in{display:block;width:100%;min-width:0;height:100%;min-height:18px;padding:0 1px;margin:0;border:0;outline:0;background:transparent;color:#111;text-align:center;font-size:10px}
-.timesheet input.cell-in.left{text-align:left}
-.timesheet input.header-input{height:35px;text-align:center;font-weight:700;font-size:12px}
-.timesheet input.cell-in:focus{background:#e0f2fe;outline:1px solid #0284c7}
-.timesheet input.bad{color:#b91c1c;border-bottom:2px solid #ef4444}
-.timesheet input.tick-cell{cursor:pointer;font-size:14px;font-weight:bold}
-.day-toggle{position:absolute;opacity:0;width:1px;height:1px}
-.day-label{display:inline-block;padding:2px 4px;border:1.5px solid transparent;border-radius:50%;cursor:pointer}
-.day-toggle:checked+.day-label{border-color:#111}
-.day-toggle:focus-visible+.day-label{outline:2px solid #0284c7}
-.footer-shade{background:#e5e7eb}
-@media(max-width:650px){
-#timesheet_view{padding:5px}
-.dashboard{padding:9px}
-.counter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.counter-card:last-child{grid-column:span 2}
-.sheet-scroll{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
-.sheet-page{margin-left:0;margin-right:0}
+/* Original Work Hub layout */
+#timesheet_view .sheet {
+  width: 210mm !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
-@page{size:A4 portrait;margin:0}
-@media print{
-*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html,body{margin:0!important;padding:0!important;width:210mm;background:#fff!important;overflow:visible!important}
-#pin_screen,#hub_view,.dashboard,#custom_ac,.page-label,#import_file_input{display:none!important}
-#timesheet_view{display:block!important;padding:0!important;margin:0!important;background:white!important;min-height:0!important}
-.sheet-scroll{overflow:visible!important}
-.sheet-page{width:210mm!important;height:296mm!important;min-height:0!important;margin:0!important;padding:10mm!important;box-shadow:none!important;overflow:hidden!important;break-inside:avoid;page-break-inside:avoid}
-#page2_container.empty-page2{display:none!important}
-#page2_container:not(.empty-page2){break-before:page;page-break-before:always}
-.timesheet input::placeholder{color:transparent!important}
-.timesheet input.cell-in:focus{outline:0;background:transparent}
-.timesheet tr{break-inside:avoid;page-break-inside:avoid}
+
+/* Two full-size A4 sheets */
+#timesheet_view .sheet > .a4-page,
+#timesheet_view .sheet > .page-2-container {
+  display: block !important;
+  width: 210mm !important;
+  height: 297mm !important;
+  min-height: 297mm !important;
+  padding: 10mm !important;
+  margin: 0 auto 20px !important;
+  background: #fff !important;
+  box-shadow: 0 3px 10px #0002;
+  box-sizing: border-box;
+}
+
+/* Expand the tables to fill the pages */
+#timesheet_view .sheet > .a4-page > table,
+#timesheet_view .sheet > .page-2-container > table {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  break-before: auto !important;
+  page-break-before: auto !important;
+}
+
+/* Compatibility with the newer Work Hub layout */
+#timesheet_view .sheet-page {
+  height: 297mm !important;
+  min-height: 297mm !important;
+  padding: 10mm !important;
+}
+
+#timesheet_view .sheet-page > table {
+  height: 100% !important;
+}
+
+#timesheet_view .sheet-page .page-label {
+  display: none !important;
+}
+
+/* Always show Page 2 on the website */
+#timesheet_view .sheet-page.empty-page2 {
+  display: block !important;
+}
+
+/* Print exactly A4-sized pages */
+@media print {
+  #timesheet_view .sheet > .a4-page,
+  #timesheet_view .sheet > .page-2-container,
+  #timesheet_view .sheet-page {
+    width: 210mm !important;
+    height: 296mm !important;
+    min-height: 296mm !important;
+    padding: 10mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Start Page 2 on a fresh physical sheet */
+  #timesheet_view .sheet >
+  .page-2-container:not(.empty-page2),
+  #timesheet_view
+  #page2_container.sheet-page:not(.empty-page2) {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  /* Do not print an unused second page */
+  #timesheet_view #page2_container.empty-page2 {
+    display: none !important;
+  }
 }
 </style>
-</head>
-<body>
-<div id="pin_screen">
-<div class="pin-card">
-<h2>work.martinlaw.me</h2>
-<p>Enter your 4-digit PIN to access Work Hub</p>
-<input id="pin_box" class="pin-input" type="password" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="••••" aria-label="Four-digit PIN">
-<button class="pin-btn" type="button" id="unlock_btn">Unlock Hub</button>
-<div id="pin_err" role="alert"></div>
-</div>
-</div>
-<div id="hub_view">
-<div class="hub-header"><h1>Martin Law — Work Hub</h1><small>work.martinlaw.me</small></div>
-<button class="hub-btn" id="open_timesheet" type="button"><span><strong>Weekly Mileage &amp; Timesheet</strong><small>Nurture Pest Control A4 sheet with live totals and PDF export</small></span><span aria-hidden="true">›</span></button>
-<div class="hub-footer"><button class="text-btn" id="change_pin" type="button">Change Hub PIN</button><button class="text-btn" id="lock_hub" type="button">Lock Hub</button></div>
-</div>
-<div id="timesheet_view">
-<div class="dashboard">
-<div class="topbar"><div class="actions"><button class="btn grey" id="back_hub" type="button">← Back to Hub</button><strong>Live Weekly Counter</strong></div>
-<div class="actions">
-<button class="btn blue" id="copy_link_btn" type="button">Copy Sync Link</button>
-<button class="btn blue" id="export_btn" type="button">Export Save</button>
-<button class="btn blue" id="import_btn" type="button">Import Save</button>
-<button class="btn purple" id="sites_btn" type="button">Manage Sites</button>
-<button class="btn grey" id="page2_btn" type="button">Show Page 2 rows</button>
-<button class="btn grey" id="new_week_btn" type="button">New Week</button>
-<button class="btn green" id="print_btn" type="button">Download / Save as PDF</button>
-</div>
-</div>
-<div class="counter-grid">
-<div class="counter-card"><div class="counter-label">Work Miles</div><div id="cnt_work" class="counter-val">0</div><div id="pred_work" class="counter-sub">5-day est: 0</div></div>
-<div class="counter-card"><div class="counter-label">Private Miles</div><div id="cnt_priv" class="counter-val">0</div><div id="pred_days" class="counter-sub">0 days logged</div></div>
-<div class="counter-card"><div class="counter-label">Overtime Hrs</div><div id="cnt_ot" class="counter-val">0</div><div class="rate-box"><span>£</span><input type="text" id="ot_rate" class="persist" inputmode="decimal" value="15.66" aria-label="Overtime hourly rate"><select id="ot_mult" class="persist" aria-label="Overtime multiplier"><option value="1">1x</option><option value="1.25">1.25x</option><option value="1.5" selected>1.5x</option><option value="2">2x</option></select></div><div id="ot_earnings" class="counter-sub"></div></div>
-<div class="counter-card"><div class="counter-label">Tasks</div><div id="cnt_tasks" class="counter-val">0</div><div id="pred_tasks" class="counter-sub">0 sites logged</div></div>
-<div class="counter-card"><div class="counter-label">Total Hours</div><div id="cnt_total_hrs" class="counter-val">0h 00m</div><div id="pred_contract" class="counter-sub">0 days · −0m break</div></div>
-</div>
-<div id="site_drawer"><div class="site-add-row"><input id="new_site_name" type="text" placeholder="Site name"><input id="new_site_zone" type="text" inputmode="numeric" placeholder="Zone"><button class="btn green" type="button" id="add_site_btn">+ Add Site</button></div><div id="site_tags_list"></div></div>
-<p class="notice">Page 2 can be opened for editing at any time. It only prints when a Page 2 job row contains data.</p>
-</div>
-<input id="import_file_input" type="file" accept=".json,application/json" hidden>
-<div id="custom_ac"></div>
-<div class="sheet-scroll">
-<section class="sheet-page" id="page1" aria-label="Timesheet page 1">
-<div class="page-label">Page 1 — mileage and job log</div>
-<table class="timesheet">
-<colgroup><col style="width:7.5%"><col style="width:24.5%"><col style="width:10%"><col style="width:5.5%"><col style="width:6%"><col style="width:5.5%"><col style="width:5.5%"><col style="width:5.5%"><col style="width:9.5%"><col style="width:10.5%"><col style="width:10%"></colgroup>
-<thead>
-<tr><td colspan="11" class="title-cell">NURTURE PEST CONTROL TIME SHEET</td></tr>
-<tr><td colspan="3" rowspan="3" class="box-label">Name<input id="f_name" class="cell-in header-input persist" type="text" value="Martin Law"></td><td colspan="2" class="left"><b>VEHICLE REG:</b></td><td colspan="6"><input id="f_reg" class="cell-in left persist" type="text"></td></tr>
-<tr><th></th><th>Date</th><th colspan="2">Start Mileage</th><th colspan="2">Finish Mileage</th><th>Work Miles</th><th>Private Miles</th></tr>
-<tr data-day="0"><th class="left">Mon</th><td><input id="m_date_0" class="cell-in weekly date-input" type="text" inputmode="numeric" placeholder="DD/MM"></td><td colspan="2"><input id="m_start_0" class="cell-in weekly" type="text" inputmode="decimal"></td><td colspan="2"><input id="m_fin_0" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_work_0" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_priv_0" class="cell-in weekly" type="text" inputmode="decimal"></td></tr>
-<tr data-day="1"><td colspan="3" rowspan="3" class="box-label">Week commencing<input id="f_wc" class="cell-in header-input weekly date-input" type="text" inputmode="numeric" placeholder="DD/MM/YY"></td><th class="left">Tue</th><td><input id="m_date_1" class="cell-in weekly date-input" type="text" inputmode="numeric"></td><td colspan="2"><input id="m_start_1" class="cell-in weekly" type="text" inputmode="decimal"></td><td colspan="2"><input id="m_fin_1" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_work_1" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_priv_1" class="cell-in weekly" type="text" inputmode="decimal"></td></tr>
-<tr data-day="2"><th class="left">Wed</th><td><input id="m_date_2" class="cell-in weekly date-input" type="text" inputmode="numeric"></td><td colspan="2"><input id="m_start_2" class="cell-in weekly" type="text" inputmode="decimal"></td><td colspan="2"><input id="m_fin_2" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_work_2" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_priv_2" class="cell-in weekly" type="text" inputmode="decimal"></td></tr>
-<tr data-day="3"><th class="left">Thu</th><td><input id="m_date_3" class="cell-in weekly date-input" type="text" inputmode="numeric"></td><td colspan="2"><input id="m_start_3" class="cell-in weekly" type="text" inputmode="decimal"></td><td colspan="2"><input id="m_fin_3" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_work_3" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_priv_3" class="cell-in weekly" type="text" inputmode="decimal"></td></tr>
-<tr data-day="4"><td colspan="3" rowspan="3" class="box-label">Team Leader<input id="f_tl" class="cell-in header-input persist" type="text"></td><th class="left">Fri</th><td><input id="m_date_4" class="cell-in weekly date-input" type="text" inputmode="numeric"></td><td colspan="2"><input id="m_start_4" class="cell-in weekly" type="text" inputmode="decimal"></td><td colspan="2"><input id="m_fin_4" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_work_4" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_priv_4" class="cell-in weekly" type="text" inputmode="decimal"></td></tr>
-<tr data-day="5"><th class="left">Sat</th><td><input id="m_date_5" class="cell-in weekly date-input" type="text" inputmode="numeric"></td><td colspan="2"><input id="m_start_5" class="cell-in weekly" type="text" inputmode="decimal"></td><td colspan="2"><input id="m_fin_5" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_work_5" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_priv_5" class="cell-in weekly" type="text" inputmode="decimal"></td></tr>
-<tr data-day="6"><th class="left">Sun</th><td><input id="m_date_6" class="cell-in weekly date-input" type="text" inputmode="numeric"></td><td colspan="2"><input id="m_start_6" class="cell-in weekly" type="text" inputmode="decimal"></td><td colspan="2"><input id="m_fin_6" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_work_6" class="cell-in weekly" type="text" inputmode="decimal"></td><td><input id="m_priv_6" class="cell-in weekly" type="text" inputmode="decimal"></td></tr>
-<tr><td colspan="5"></td><td colspan="2" class="left"><b>TOTALS</b></td><td colspan="2"><input id="m_tot_fin" class="cell-in" type="text" readonly></td><td><input id="m_tot_work" class="cell-in" type="text" readonly></td><td><input id="m_tot_priv" class="cell-in" type="text" readonly></td></tr>
-<tr><td colspan="3" class="small-notice">PLEASE CIRCLE DAYS COVERED FOR ON CALL ALLOWANCE</td><td></td><td class="bold"><input class="day-toggle weekly" type="checkbox" id="d_fri"><label class="day-label" for="d_fri">FRI</label></td><td></td><td class="bold"><input class="day-toggle weekly" type="checkbox" id="d_sat"><label class="day-label" for="d_sat">SAT</label></td><td></td><td class="bold"><input class="day-toggle weekly" type="checkbox" id="d_sun"><label class="day-label" for="d_sun">SUN</label></td><td></td><td class="bold"><input class="day-toggle weekly" type="checkbox" id="d_mon"><label class="day-label" for="d_mon">MON</label></td></tr>
-<tr class="job-head"><th>Date</th><th>Site details</th><th>Zone number</th><th>R</th><th>EFK</th><th>F/U</th><th>C/O</th><th>T</th><th>Start Time</th><th>Finish Time</th><th>Overtime</th></tr>
-</thead>
-<tbody id="log_body_p1"></tbody>
-<tfoot><tr><td colspan="3"></td><td class="bold">R</td><td class="bold">EFK</td><td class="bold">F/U</td><td class="bold">C/O</td><td class="bold">T</td><td colspan="2"></td><td class="bold">OT</td></tr><tr><td colspan="3" class="left"><b>PAGE 1 TOTALS</b></td><td><input id="tot_r_p1" class="cell-in" readonly></td><td><input id="tot_efk_p1" class="cell-in" readonly></td><td><input id="tot_fu_p1" class="cell-in" readonly></td><td><input id="tot_co_p1" class="cell-in" readonly></td><td><input id="tot_t_p1" class="cell-in" readonly></td><td colspan="2"></td><td><input id="tot_ot_p1" class="cell-in" readonly></td></tr></tfoot>
-</table>
-</section>
-<section class="sheet-page empty-page2" id="page2_container" aria-label="Timesheet page 2">
-<div class="page-label">Page 2 — continuation</div>
-<table class="timesheet">
-<colgroup><col style="width:7.5%"><col style="width:24.5%"><col style="width:10%"><col style="width:5.5%"><col style="width:6%"><col style="width:5.5%"><col style="width:5.5%"><col style="width:5.5%"><col style="width:9.5%"><col style="width:10.5%"><col style="width:10%"></colgroup>
-<thead><tr><th>Date</th><th>Site details</th><th>Zone number</th><th>R</th><th>EFK</th><th>F/U</th><th>C/O</th><th>T</th><th>Start Time</th><th>Finish Time</th><th>Overtime</th></tr></thead>
-<tbody id="log_body_p2"></tbody>
-<tfoot>
-<tr class="footer-shade"><td colspan="3"></td><td class="bold">R</td><td class="bold">EFK</td><td class="bold">F/U</td><td class="bold">C/O</td><td class="bold">T</td><td colspan="2"></td><td class="bold">OT</td></tr>
-<tr><td colspan="3"><b>Page 2</b></td><td><input id="tot_r_p2" class="cell-in" readonly></td><td><input id="tot_efk_p2" class="cell-in" readonly></td><td><input id="tot_fu_p2" class="cell-in" readonly></td><td><input id="tot_co_p2" class="cell-in" readonly></td><td><input id="tot_t_p2" class="cell-in" readonly></td><td colspan="2"></td><td><input id="tot_ot_p2" class="cell-in" readonly></td></tr>
-<tr><td colspan="3"><b>Page 1</b></td><td><input id="sum_r_p1" class="cell-in" readonly></td><td><input id="sum_efk_p1" class="cell-in" readonly></td><td><input id="sum_fu_p1" class="cell-in" readonly></td><td><input id="sum_co_p1" class="cell-in" readonly></td><td><input id="sum_t_p1" class="cell-in" readonly></td><td colspan="2"></td><td><input id="sum_ot_p1" class="cell-in" readonly></td></tr>
-<tr class="footer-shade"><td colspan="3"><b>TOTALS</b></td><td><input id="tot_r" class="cell-in" readonly></td><td><input id="tot_efk" class="cell-in" readonly></td><td><input id="tot_fu" class="cell-in" readonly></td><td><input id="tot_co" class="cell-in" readonly></td><td><input id="tot_t" class="cell-in" readonly></td><td colspan="2"></td><td><input id="tot_ot" class="cell-in" readonly></td></tr>
-<tr><td colspan="2"><b>PRIVATE MILES</b></td><td><input id="m_tot_priv_footer" class="cell-in" readonly></td><td colspan="8"></td></tr>
-</tfoot>
-</table>
-</section>
-</div>
-</div>
+
 <script>
-'use strict';
-const $ = id => document.getElementById(id);
-const PIN_KEY = 'ml_hub_pin', AUTH_KEY = 'ml_hub_unlocked';
-const SITES_KEY = 'nurture_saved_sites_v3', STORAGE_KEY = 'nurture_ts_master_v3', CARRY_KEY = 'ml_carry_odo';
-const P1_ROWS = 17, P2_ROWS = 26, TOTAL_ROWS = P1_ROWS + P2_ROWS;
-const BREAK_LIMIT = 360, BREAK_MINS = 30, ROUND_OT_MINS = 15;
-const START_BUFFER = 480, END_BUFFER = 1050, COMMUTE_MINS = 30;
-const DEFAULT_SITE_NAMES = [
-"Buckingham Palace","St James's Palace","Clarence House","Kensington Palace","Windsor Castle","Frogmore House","Hampton Court Palace","Tower of London","Horse Guards","MOD Main Building Whitehall","Old War Office Whitehall","Wellington Barracks","Hyde Park Barracks","Regent's Park Barracks","Chelsea Barracks","Royal Hospital Chelsea","Victoria Barracks Windsor","Combermere Barracks Windsor","Royal Artillery Barracks Woolwich","Woolwich Garrison","Napier Lines Woolwich","Cavalry Barracks Hounslow","Armoury House (HAC)","King's Troop RHA Woolwich","Latchmere House","Kneller Hall Twickenham","Northwood Headquarters",
-"RMAS Sandhurst","Watchfield / Defence Academy Shrivenham","Denison Barracks Hermitage","Brock Barracks Reading","AWE Aldermaston","AWE Burghfield","Arborfield Garrison","Bramley Training Area","RAF Welford","Aldershot Garrison","Lille Barracks Aldershot","Mons Barracks Aldershot","Buller Barracks Aldershot","Travers Barracks Aldershot","Browning Barracks Aldershot","Gale Barracks Aldershot","Duchess of Kent Barracks Aldershot","Montgomery Lines Aldershot","St Omer Barracks Aldershot","Normandy Barracks Aldershot","Thornhill Barracks Aldershot","Wavell Barracks Aldershot",
-"Minley Station","Gibraltar Barracks Minley","Minley Manor","Deepcut Barracks (Princess Royal Barracks)","Keogh Barracks Ash Vale","Pirbright Camp (ATC Pirbright)","Alexander Barracks Pirbright","Elizabeth Barracks Pirbright","Brunswick Camp Pirbright","Headley Court","RAF Odiham","RAF Oakhanger","Bordon & Longmoor Garrison","Longmoor Camp","Barton Stacey Camp","MOD Worthy Down","Sir John Moore Barracks Winchester","Southwick Park (HMS Dryad)","Middle Wallop (AACen)","Andover (Marlborough Lines / Army HQ)","Marchwood Military Port","HMNB Portsmouth","HMS Nelson Portsmouth","HMS Excellent Whale Island","HMS Collingwood Fareham","HMS Sultan Gosport","HMS Temeraire Portsmouth","Fort Blockhouse Gosport","DM Gosport","Horsea Island","Tipner Ranges","Browndown Camp","Thorney Island (Baker Barracks)",
-"RAF Medmenham","Danesfield House Medmenham","RAF High Wycombe (Air Command)","RAF Halton","RAF Daws Hill","Wilton Park Beaconsfield","RAF Brize Norton","RAF Benson","Dalton Barracks Abingdon","Edward Brooks Barracks Abingdon","Bicester Garrison","St George's Barracks Bicester","St David's Barracks Bicester","MOD Bicester","RAF Weston-on-the-Green","Vauxhall Barracks Didcot","RAF Croughton","RAF Barford St John","Chicksands (DIFC)","RAF Henlow",
-"Brompton Barracks Chatham","Chattenden Barracks","Lodge Hill Camp","Upnor Castle / Upper Upnor","Invicta Park Barracks Maidstone","Shorncliffe Garrison","Sir John Moore Barracks Shorncliffe","Risborough Barracks Shorncliffe","Burgoyne Barracks Shorncliffe","Somerset Barracks Shorncliffe","Napier Barracks Folkestone","St Martin's Plain Camp","Hythe Ranges","Lydd Ranges / Lydd Camp","Dover Duke of York's Royal Military School","Crowborough Training Camp","Newhaven Fort / Reserve Centre","Colchester Garrison","Merville Barracks Colchester","Goojera Barracks Colchester","Foynes Barracks Colchester","Carver Barracks Wimbish","MOD Shoeburyness (Foulness Island)","Fingringhoe Ranges",
-"Tidworth Camp / Garrison","Aliwal Barracks Tidworth","Assaye Barracks Tidworth","Bhurtpore Barracks Tidworth","Candahar Barracks Tidworth","Delhi Barracks Tidworth","Jellalabad Barracks Tidworth","Lucknow Barracks Tidworth","Mooltan Barracks Tidworth","Swinton Barracks Perham Down","Bulford Camp / Garrison","Kiwi Barracks Bulford","Picton Barracks Bulford","Ward Barracks Bulford","Wing Barracks Bulford","Larkhill Garrison","Purvis Lines Larkhill","Horne Barracks Larkhill","Roberts Barracks Larkhill","Warminster Garrison","Battlesbury Barracks Warminster","Harman Lines Warminster","Waterloo Lines Warminster","Upavon Station (Trenchard Lines)","MOD Boscombe Down","Porton Down (Dstl)","MOD Lyneham","MOD Corsham","Azimghur Barracks Colerne","Buckley Barracks Hullavington",
-"Bovington Camp","Allenby Barracks Bovington","Lulworth Camp","Stanley Barracks Bovington","Blandford Camp","RNAS Yeovilton","RM Poole (Hamworthy)","Wyvern Barracks Exeter","CTCRM Lympstone","RM Bickleigh","Royal Citadel Plymouth","HMNB Devonport","RNAS Culdrose","Imjin Barracks Innsworth","RAF Fairford","Duke of Gloucester Barracks South Cerney","Beachley Barracks Chepstow",
-"RAF Northolt","RAF Wyton","RAF Alconbury","RAF Molesworth","Bassingbourn Barracks","Waterbeach Barracks","RAF Honington","RAF Barnham","RAF Lakenheath","RAF Mildenhall","RAF Feltwell","RAF Marham","Robertson Barracks Swanton Morley","Stanford Training Area (STANTA)","Gibraltar Barracks Bury St Edmunds","Wattisham Flying Station","Rock Barracks Woodbridge","RAF Wittering","Kendrew Barracks Cottesmore","St George's Barracks North Luffenham","Prince William of Gloucester Barracks Grantham","RAF Cranwell","RAF Barkston Heath","RAF Waddington","RAF Coningsby","RAF Digby","RAF Scampton","RAF Syerston","RAF Donna Nook","RAF Holbeach",
-"Chetwynd Barracks Chilwell","Gamecock Barracks Bramcote","MOD Stafford (Beacon Barracks)","Whittington Barracks Lichfield (DMS)","MOD Donnington","RAF Cosford","RAF Shawbury","Clive Barracks Tern Hill","Copthorne Barracks Shrewsbury","Credenhill (Stirling Lines)","MOD Kineton","MOD St Athan","Brecon Barracks","Sennybridge Training Area","Castlemartin Camp","RAF Valley","Dale Barracks Chester","Weeton Barracks","Fulwood Barracks Preston","RAF Woodvale",
-"Catterick Garrison","Marne Barracks Catterick","Bourlon Barracks Catterick","Gaza Barracks Catterick","Megiddo Lines Catterick","Somme Barracks Catterick","Vimy Barracks Catterick","Imphal Barracks York","Queen Elizabeth Barracks Strensall","Alanbrooke Barracks Topcliffe","Claro Barracks Ripon","Uniacke Barracks Harrogate","Normandy Barracks Leconfield","RAF Leeming","RAF Fylingdales","RAF Menwith Hill","RAF Staxton Wold","Albemarle Barracks Harlow Hill","RAF Boulmer","RAF Spadeadam"
-];
-const COLS = ['r','efk','fu','co','t','ot'];
-let manualStarts = Array(7).fill(false);
-let autoStarts = Array(7).fill(null);
-let manualOvertime = Array(TOTAL_ROWS).fill(false);
-let restoring = false, hashTimer = 0, suggestionRow = -1;
+(function () {
+  function prepareFullA4Pages() {
+    const sheet = document.querySelector(
+      '#timesheet_view .sheet'
+    );
 
-function numeric(el){const s=(el?.value||'').trim();return /^\d+(?:\.\d+)?$/.test(s)?Number(s):NaN}
-function val(id){return ($(id)?.value||'').trim()}
-function put(id,v){const el=$(id);if(!el)return;const scale=/^(tot_ot|sum_ot)/.test(id)?100:10;el.value=Number.isFinite(v)?String(Math.round((v+Number.EPSILON)*scale)/scale):''}
-function r1(x){return Math.round((x+Number.EPSILON)*10)/10}
-function finite(v){return Number.isFinite(v)}
-function milli(day,part){return $(`m_${part}_${day}`)}
-function fmtTimeMinutes(n){return `${Math.floor(n/60)}h ${String(Math.round(n)%60).padStart(2,'0')}m`}
-function showView(view){$('pin_screen').style.display=view==='pin'?'flex':'none';$('hub_view').style.display=view==='hub'?'block':'none';$('timesheet_view').style.display=view==='timesheet'?'block':'none';document.body.style.background=view==='timesheet'?'#e5e7eb':'#0f172a'}
-function verifyPin(){const pin=val('pin_box');if(pin===(localStorage.getItem(PIN_KEY)||'1234')){localStorage.setItem(AUTH_KEY,'1');$('pin_err').textContent='';$('pin_box').value='';showView('hub')}else{$('pin_err').textContent='Incorrect PIN';$('pin_box').value=''}}
-function changePin(){const old=prompt('Enter your current PIN:');if(old===null)return;if(old!==(localStorage.getItem(PIN_KEY)||'1234')){alert('Incorrect PIN.');return}const pin=prompt('Enter a new four-digit PIN:');if(pin===null)return;if(!/^\d{4}$/.test(pin)){alert('PIN must contain exactly four digits.');return}localStorage.setItem(PIN_KEY,pin);alert('PIN updated.')}
+    if (!sheet) return;
 
-function buildRows(){
-const makeRow=r=>`<tr class="log-row"><td><input id="r${r}_c0" class="cell-in weekly date-input" type="text" inputmode="numeric" placeholder="DD/MM"></td><td><input id="r${r}_c1" class="cell-in left weekly site-input" type="text" autocomplete="off"></td><td><input id="r${r}_c2" class="cell-in weekly" type="text" inputmode="numeric"></td>${[3,4,5,6,7].map(c=>`<td><input id="r${r}_c${c}" class="cell-in weekly tick-cell" type="text" readonly aria-label="Toggle ${['R','EFK','F/U','C/O','T'][c-3]} on row ${r+1}"></td>`).join('')}<td><input id="r${r}_c8" class="cell-in weekly time-input" type="text" inputmode="numeric" placeholder="HH:MM"></td><td><input id="r${r}_c9" class="cell-in weekly time-input" type="text" inputmode="numeric" placeholder="HH:MM"></td><td><input id="r${r}_c10" class="cell-in weekly overtime-input" type="text" inputmode="decimal" aria-label="Overtime on row ${r+1}"></td></tr>`;
-$('log_body_p1').innerHTML=Array.from({length:P1_ROWS},(_,i)=>makeRow(i)).join('');
-$('log_body_p2').innerHTML=Array.from({length:P2_ROWS},(_,i)=>makeRow(P1_ROWS+i)).join('');
-}
-function formatDate(el){const digits=el.value.replace(/\D/g,'').slice(0,8);el.value=digits.length>4?digits.slice(0,2)+'/'+digits.slice(2,4)+'/'+digits.slice(4):digits.length>2?digits.slice(0,2)+'/'+digits.slice(2):digits}
-function formatTime(el){const digits=el.value.replace(/\D/g,'').slice(0,4);el.value=digits.length===4?digits.slice(0,2)+':'+digits.slice(2):digits.length===3?digits.slice(0,1)+':'+digits.slice(1):digits}
-function parseTime(s){const m=s.match(/^(\d{1,2}):(\d{2})$/);if(!m)return null;const hh=Number(m[1]),mm=Number(m[2]);return hh<24&&mm<60?hh*60+mm:null}
-function parseDate(raw,defaultYear){const m=raw.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?$/);if(!m)return null;let y=m[3]?Number(m[3]):defaultYear;if(y<100)y+=2000;const date=new Date(y,Number(m[2])-1,Number(m[1]),12);if(date.getFullYear()!==y||date.getMonth()!==Number(m[2])-1||date.getDate()!==Number(m[1]))return null;return date}
-function weekStartDate(){return parseDate(val('f_wc'),new Date().getFullYear())}
-function fillWeekDates(){const d=weekStartDate();if(!d)return;for(let i=0;i<7;i++){const next=new Date(d);next.setDate(d.getDate()+i);$(`m_date_${i}`).value=String(next.getDate()).padStart(2,'0')+'/'+String(next.getMonth()+1).padStart(2,'0')}calculateAll()}
-function dateForRow(r){let raw='';for(let k=r;k>=0;k--){raw=val(`r${k}_c0`);if(raw)break}if(!raw)return null;return parseDate(raw,weekStartDate()?.getFullYear()||new Date().getFullYear())}
-function weekendForRow(r){const d=dateForRow(r);return d?d.getDay()===0||d.getDay()===6:false}
+    const firstTable = Array.from(
+      sheet.children
+    ).find(element => element.tagName === 'TABLE');
 
-function updateMileageDay(i){const s=numeric(milli(i,'start')),w=numeric(milli(i,'work')),p=numeric(milli(i,'priv'));if(finite(s)&&(finite(w)||finite(p)))put(`m_fin_${i}`,s+(finite(w)?w:0)+(finite(p)?p:0));return numeric(milli(i,'fin'))}
-function mileageWarning(i,message){const el=milli(i,'start');el.classList.toggle('bad',!!message);el.title=message||''}
-function propagateMileage(){
-let carry=Number(localStorage.getItem(CARRY_KEY));
-if(!val('m_start_0')&&localStorage.getItem(CARRY_KEY)!==null&&finite(carry))put('m_start_0',carry);
-updateMileageDay(0);
-for(let i=1;i<7;i++){
-const oldStart=numeric(milli(i,'start'));
-const prevFin=numeric(milli(i-1,'fin'));
-const shouldAuto=!manualStarts[i]||!val(`m_start_${i}`)||finite(oldStart)&&finite(autoStarts[i])&&oldStart===autoStarts[i];
-if(shouldAuto){put(`m_start_${i}`,prevFin);autoStarts[i]=finite(prevFin)?prevFin:null;manualStarts[i]=false}
-else if(finite(oldStart)&&finite(prevFin)&&oldStart>prevFin){
-const delta=r1(oldStart-prevFin);
-const prevP=numeric(milli(i-1,'priv'));
-put(`m_priv_${i-1}`,(finite(prevP)?prevP:0)+delta);
-const prevStart=numeric(milli(i-1,'start'));
-const prevWork=numeric(milli(i-1,'work'));
-if(finite(prevStart)&&finite(prevWork))updateMileageDay(i-1);
-else put(`m_fin_${i-1}`,oldStart);
-autoStarts[i]=oldStart;manualStarts[i]=false;
-}
-const start=numeric(milli(i,'start'));
-const updatedPrev=numeric(milli(i-1,'fin'));
-mileageWarning(i,finite(start)&&finite(updatedPrev)&&start<updatedPrev?'Start mileage is lower than the previous day’s finish. Check both entries.':'');
-updateMileageDay(i);
-}
-updateMileageTotals();
-}
-function onMileageInput(day,part){
-if(part==='start'&&day>0){manualStarts[day]=!!val(`m_start_${day}`);autoStarts[day]=null}
-if(part==='fin'){
-const start=numeric(milli(day,'start')),finish=numeric(milli(day,'fin'));
-const work=numeric(milli(day,'work')),priv=numeric(milli(day,'priv'));
-if(finite(start)&&finite(finish)&&finish>=start){
-const travelled=r1(finish-start);
-if(finite(work)&&travelled>=work)put(`m_priv_${day}`,travelled-work);
-else if(finite(priv)&&travelled>=priv)put(`m_work_${day}`,travelled-priv);
-}
-}
-propagateMileage();
-}
-function updateMileageTotals(){let w=0,p=0,last=NaN,hasW=false,hasP=false;for(let i=0;i<7;i++){const work=numeric(milli(i,'work')),priv=numeric(milli(i,'priv')),fin=numeric(milli(i,'fin'));if(finite(work)){w+=work;hasW=true}if(finite(priv)){p+=priv;hasP=true}if(finite(fin))last=fin}put('m_tot_work',hasW?w:NaN);put('m_tot_priv',hasP?p:NaN);put('m_tot_priv_footer',hasP?p:NaN);put('m_tot_fin',last)}
+    if (!firstTable) return;
 
-function calculateOvertime(){
-const groups=new Map();let activeDate='unassigned';
-for(let r=0;r<TOTAL_ROWS;r++){
-const d=dateForRow(r);
-if(val(`r${r}_c0`))activeDate=d?`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`:`invalid-${r}`;
-const start=parseTime(val(`r${r}_c8`)),finish=parseTime(val(`r${r}_c9`));
-if(start===null||finish===null)continue;
-if(!groups.has(activeDate))groups.set(activeDate,{rows:[],start:Infinity,finish:-Infinity,duration:0,weekend:weekendForRow(r)});
-const g=groups.get(activeDate),end=finish<start?finish+1440:finish;
-g.rows.push(r);g.start=Math.min(g.start,start);g.finish=Math.max(g.finish,end);g.duration+=Math.max(0,end-start);
-}
-for(let r=0;r<TOTAL_ROWS;r++)if(!manualOvertime[r])$(`r${r}_c10`).value='';
-let minsTotal=0,breakTotal=0;
-for(const g of groups.values()){
-const br=g.duration>BREAK_LIMIT?BREAK_MINS:0;
-breakTotal+=br;minsTotal+=Math.max(0,g.duration-br);
-let ot=0;
-if(g.weekend){ot=Math.max(0,g.duration-br)}
-else{
-const early=Math.max(0,Math.min(START_BUFFER,g.finish)-g.start-COMMUTE_MINS);
-const late=Math.max(0,g.finish-Math.max(END_BUFFER,g.start)-COMMUTE_MINS);
-ot=early+late;
-}
-ot=Math.round(ot/ROUND_OT_MINS)*ROUND_OT_MINS;
-if(ot>0){const last=g.rows[g.rows.length-1];if(!manualOvertime[last])$(`r${last}_c10`).value=String(Math.round(ot/60*100)/100)}
-}
-return {minutes:minsTotal,breakMinutes:breakTotal,days:groups.size};
-}
-function calculateAll(){
-const hrs=calculateOvertime();
-let taskTotal=0,otTotal=0,sitesLogged=0;
-for(let c=3;c<=10;c++){
-if(c===8||c===9)continue;
-let sum1=0,sum2=0,used1=false,used2=false;
-for(let r=0;r<TOTAL_ROWS;r++){
-const s=val(`r${r}_c${c}`);if(!s)continue;
-const n=c===10?(Number(s)||0):1;
-if(r<P1_ROWS){sum1+=n;used1=true}else{sum2+=n;used2=true}
-}
-const name=c===10?'ot':COLS[c-3];
-const round=x=>c===10?Math.round(x*100)/100:x;
-put(`tot_${name}_p1`,used1?round(sum1):NaN);
-put(`tot_${name}_p2`,used2?round(sum2):NaN);
-put(`sum_${name}_p1`,used1?round(sum1):NaN);
-put(`tot_${name}`,used1||used2?round(sum1+sum2):NaN);
-if(c===10)otTotal=round(sum1+sum2);else taskTotal+=sum1+sum2;
-}
-for(let r=0;r<TOTAL_ROWS;r++)if(val(`r${r}_c1`))sitesLogged++;
-let work=0,priv=0,daysWithWork=0;
-for(let i=0;i<7;i++){
-const w=numeric(milli(i,'work')),p=numeric(milli(i,'priv'));
-if(finite(w)&&w>0){daysWithWork++;work+=w}if(finite(p)&&p>0)priv+=p;
-}
-const rate=Number(val('ot_rate'))||0,mult=Number(val('ot_mult'))||1;
-$('cnt_work').textContent=String(r1(work));$('cnt_priv').textContent=String(r1(priv));
-$('pred_days').textContent=daysWithWork+' day'+(daysWithWork===1?'':'s')+' logged';
-$('pred_work').textContent='5-day est: '+(daysWithWork?Math.round(work/daysWithWork*5):0)+' mi';
-$('cnt_ot').textContent=String(Math.round(otTotal*100)/100);
-$('ot_earnings').textContent='£'+(otTotal*rate*mult).toFixed(2)+' est ('+mult+'x)';
-$('cnt_tasks').textContent=String(taskTotal);
-$('pred_tasks').textContent=sitesLogged+' site'+(sitesLogged===1?'':'s')+' logged';
-$('cnt_total_hrs').textContent=fmtTimeMinutes(hrs.minutes);
-$('pred_contract').textContent=hrs.days+' day'+(hrs.days===1?'':'s')+' · −'+hrs.breakMinutes+'m break';
-checkPage2Visibility();
-}
-function checkPage2Visibility(){let hasData=false;for(let r=P1_ROWS;r<TOTAL_ROWS&&!hasData;r++){for(let c=0;c<=10;c++)if(val(`r${r}_c${c}`)){hasData=true;break}}$('page2_container').classList.toggle('empty-page2',!hasData);$('page2_btn').textContent=hasData?'Page 2 active':$('page2_container').classList.contains('manually-open')?'Hide empty Page 2':'Show Page 2 rows'}
+    const pageOne = document.createElement('div');
+    pageOne.className = 'a4-page';
 
-function readSites(){try{const arr=JSON.parse(localStorage.getItem(SITES_KEY)||'[]');return Array.isArray(arr)?arr.filter(s=>s&&typeof s.name==='string'):[]}catch{return[]}}
-function allSites(){const result=DEFAULT_SITE_NAMES.map(name=>({name,zone:''}));for(const site of readSites()){const existing=result.find(s=>s.name.toLowerCase()===site.name.toLowerCase());if(existing)existing.zone=site.zone||'';else result.push({name:site.name,zone:site.zone||''})}return result.sort((a,b)=>a.name.localeCompare(b.name))}
-function renderSites(){const box=$('site_tags_list');box.replaceChildren();const permanent=new Set(DEFAULT_SITE_NAMES.map(s=>s.toLowerCase()));for(const s of allSites()){const tag=document.createElement('span');tag.className='site-tag';tag.append(document.createTextNode(s.name+(s.zone?' (Zone '+s.zone+')':'')));if(!permanent.has(s.name.toLowerCase())){const btn=document.createElement('button');btn.type='button';btn.textContent='×';btn.title='Remove '+s.name;btn.addEventListener('click',()=>{localStorage.setItem(SITES_KEY,JSON.stringify(readSites().filter(v=>v.name.toLowerCase()!==s.name.toLowerCase())));renderSites();saveState()});tag.append(btn)}box.append(tag)}}
-function addSite(){const name=val('new_site_name'),zone=val('new_site_zone');if(!name)return;const arr=readSites().filter(s=>s.name.toLowerCase()!==name.toLowerCase());arr.push({name,zone});localStorage.setItem(SITES_KEY,JSON.stringify(arr));$('new_site_name').value='';$('new_site_zone').value='';renderSites();saveState()}
-function fillZone(r){const name=val(`r${r}_c1`).toLowerCase(),el=$(`r${r}_c2`);if(!name||val(`r${r}_c2`))return;const site=allSites().find(s=>s.name.toLowerCase()===name);if(site&&site.zone)el.value=site.zone}
-function siteSuggestions(inp,r){const q=inp.value.trim().toLowerCase(),box=$('custom_ac');suggestionRow=r;if(!q){box.style.display='none';return}const matches=allSites().filter(s=>s.name.toLowerCase().includes(q)).slice(0,10);if(!matches.length){box.style.display='none';return}const rect=inp.getBoundingClientRect();box.style.left=window.scrollX+rect.left+'px';box.style.top=window.scrollY+rect.bottom+2+'px';box.style.width=Math.max(rect.width,245)+'px';box.replaceChildren();for(const m of matches){const item=document.createElement('div');item.className='ac-item';const name=document.createElement('span');name.textContent=m.name;item.append(name);if(m.zone){const zone=document.createElement('span');zone.className='ac-zone';zone.textContent='Z'+m.zone;item.append(zone)}item.addEventListener('pointerdown',e=>{e.preventDefault();$(`r${r}_c1`).value=m.name;if(!val(`r${r}_c2`))$(`r${r}_c2`).value=m.zone;box.style.display='none';calculateAll();saveState()});box.append(item)}box.style.display='block'}
+    sheet.insertBefore(pageOne, firstTable);
+    pageOne.appendChild(firstTable);
+  }
 
-function encodeHashData(obj){try{const bytes=new TextEncoder().encode(JSON.stringify(obj));let bin='';for(const b of bytes)bin+=String.fromCharCode(b);return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}catch{return''}}
-function decodeHashData(s){try{let x=s.replace(/^#/,'').replace(/-/g,'+').replace(/_/g,'/');while(x.length%4)x+='=';const b=atob(x),bytes=Uint8Array.from(b,c=>c.charCodeAt(0));return JSON.parse(new TextDecoder().decode(bytes))}catch{return null}}
-function collectState(){const data={inputs:{},checks:{},meta:{manualStarts:[...manualStarts],autoStarts:[...autoStarts],manualOvertime:[...manualOvertime]}};document.querySelectorAll('input.cell-in:not([readonly]), #ot_rate, #ot_mult').forEach(el=>{if(el.id&&el.value!=='')data.inputs[el.id]=el.value});document.querySelectorAll('.day-toggle').forEach(el=>data.checks[el.id]=el.checked);return data}
-function saveState(){if(restoring)return;try{const state=collectState();localStorage.setItem(STORAGE_KEY,JSON.stringify(state));clearTimeout(hashTimer);hashTimer=setTimeout(()=>{const encoded=encodeHashData({s:state,c:readSites(),o:localStorage.getItem(CARRY_KEY)||''});if(encoded)history.replaceState(null,'','#'+encoded)},240)}catch(e){console.error('Could not save timesheet',e)}}
-function restoreState(skipHash=false){restoring=true;try{
-if(!skipHash&&location.hash.length>2){const remote=decodeHashData(location.hash);if(remote&&remote.s&&remote.s.inputs){localStorage.setItem(STORAGE_KEY,JSON.stringify(remote.s));if(Array.isArray(remote.c))localStorage.setItem(SITES_KEY,JSON.stringify(remote.c));if(typeof remote.o==='string')localStorage.setItem(CARRY_KEY,remote.o)}}
-const state=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!state){propagateMileage();calculateAll();return}
-document.querySelectorAll('input.cell-in:not([readonly]), #ot_rate, #ot_mult').forEach(el=>{el.value=el.id==='f_name'?'Martin Law':el.id==='ot_rate'?'15.66':el.id==='ot_mult'?'1.5':''});document.querySelectorAll('.day-toggle').forEach(el=>el.checked=false);
-if(state.inputs&&typeof state.inputs==='object')for(const [id,v] of Object.entries(state.inputs)){const el=$(id);if(el&&!el.readOnly&&typeof v==='string')el.value=v}
-if(state.checks)for(const [id,v] of Object.entries(state.checks)){const el=$(id);if(el&&el.type==='checkbox')el.checked=!!v}
-manualStarts=Array.from({length:7},(_,i)=>!!state.meta?.manualStarts?.[i]);
-autoStarts=Array.from({length:7},(_,i)=>{const v=state.meta?.autoStarts?.[i];return typeof v==='number'&&finite(v)?v:null});
-manualOvertime=Array.from({length:TOTAL_ROWS},(_,i)=>!!state.meta?.manualOvertime?.[i]);
-if(!state.meta)for(let i=1;i<7;i++){const start=numeric(milli(i,'start')),previous=numeric(milli(i-1,'fin'));manualStarts[i]=finite(start)&&(!finite(previous)||start!==previous);autoStarts[i]=finite(previous)&&start===previous?previous:null}
-propagateMileage();calculateAll();
-}catch(e){console.error('Unable to restore saved data',e)}finally{restoring=false}}
-async function copySyncLink(){saveState();clearTimeout(hashTimer);const payload={s:collectState(),c:readSites(),o:localStorage.getItem(CARRY_KEY)||''};const encoded=encodeHashData(payload);if(!encoded){alert('Unable to prepare sync link.');return}history.replaceState(null,'','#'+encoded);const url=location.href;try{await navigator.clipboard.writeText(url);$('copy_link_btn').textContent='Link Copied!';setTimeout(()=>$('copy_link_btn').textContent='Copy Sync Link',1800)}catch{prompt('Copy your sync link:',url)}}
-function exportBackup(){saveState();const data={timestamp:Date.now(),storage:localStorage.getItem(STORAGE_KEY),sites:localStorage.getItem(SITES_KEY),pin:localStorage.getItem(PIN_KEY),carry:localStorage.getItem(CARRY_KEY)};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='work_hub_backup_'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-function importBackup(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(typeof data.storage!=='string'||!JSON.parse(data.storage)?.inputs)throw Error('Invalid data');localStorage.setItem(STORAGE_KEY,data.storage);if(typeof data.sites==='string')localStorage.setItem(SITES_KEY,data.sites);if(typeof data.carry==='string')localStorage.setItem(CARRY_KEY,data.carry);if(typeof data.pin==='string'&&/^\d{4}$/.test(data.pin))localStorage.setItem(PIN_KEY,data.pin);restoreState(true);renderSites();saveState();alert('Backup imported successfully.')}catch(e){alert('This does not appear to be a valid Work Hub backup.')}finally{$('import_file_input').value=''}};reader.readAsText(file)}
-function startNewWeek(){if(!confirm('Start a new week? Name, vehicle, team leader, rate, multiplier and saved sites will stay.'))return;let last=NaN;for(let i=6;i>=0;i--){const f=numeric(milli(i,'fin'));if(finite(f)){last=f;break}}if(finite(last))localStorage.setItem(CARRY_KEY,String(last));for(const el of document.querySelectorAll('input.weekly')){if(el.type==='checkbox')el.checked=false;else el.value=''}manualStarts=Array(7).fill(false);autoStarts=Array(7).fill(null);manualOvertime=Array(TOTAL_ROWS).fill(false);$('page2_container').classList.remove('manually-open');propagateMileage();calculateAll();saveState()}
-
-function onInput(event){const el=event.target;if(!el.id||restoring||el.id==='pin_box'||el.id==='new_site_name'||el.id==='new_site_zone')return;const id=el.id;
-if(el.classList.contains('date-input')){formatDate(el);if(id==='f_wc')fillWeekDates()}
-if(el.classList.contains('time-input'))formatTime(el);
-const mileage=id.match(/^m_(start|fin|work|priv)_(\d)$/);if(mileage&&mileage[1]!=='fin')onMileageInput(Number(mileage[2]),mileage[1]);
-const row=id.match(/^r(\d+)_c(\d+)$/);
-if(row){const r=Number(row[1]),c=Number(row[2]);if(c===1){fillZone(r);siteSuggestions(el,r)}if(c===10)manualOvertime[r]=!!el.value.trim()}
-calculateAll();saveState();
-}
-function onClick(event){if(event.target.closest('#custom_ac')||event.target.classList.contains('site-input'))return;$('custom_ac').style.display='none'}
-function init(){buildRows();restoreState(false);renderSites();$('pin_box').addEventListener('input',()=>{if(val('pin_box').length===4)verifyPin()});$('pin_box').addEventListener('keydown',e=>{if(e.key==='Enter')verifyPin()});$('unlock_btn').addEventListener('click',verifyPin);$('change_pin').addEventListener('click',changePin);$('lock_hub').addEventListener('click',()=>{localStorage.removeItem(AUTH_KEY);showView('pin')});$('open_timesheet').addEventListener('click',()=>showView('timesheet'));$('back_hub').addEventListener('click',()=>showView('hub'));
-$('copy_link_btn').addEventListener('click',copySyncLink);$('export_btn').addEventListener('click',exportBackup);$('import_btn').addEventListener('click',()=>$('import_file_input').click());$('import_file_input').addEventListener('change',e=>importBackup(e.target.files[0]));$('sites_btn').addEventListener('click',()=>{$('site_drawer').style.display=$('site_drawer').style.display==='block'?'none':'block'});$('add_site_btn').addEventListener('click',addSite);$('page2_btn').addEventListener('click',()=>{$('page2_container').classList.toggle('manually-open');checkPage2Visibility();if($('page2_container').classList.contains('manually-open'))$('page2_container').scrollIntoView({behavior:'smooth',block:'start'})});$('new_week_btn').addEventListener('click',startNewWeek);$('print_btn').addEventListener('click',()=>window.print());
-document.addEventListener('input',onInput);document.addEventListener('change',e=>{const m=e.target.id?.match(/^m_fin_(\d)$/);if(m)onMileageInput(Number(m[1]),'fin');if(m||e.target.classList.contains('day-toggle')||e.target.id==='ot_mult'){calculateAll();saveState()}});
-document.addEventListener('click',onClick);
-document.querySelectorAll('.tick-cell').forEach(el=>{el.addEventListener('click',()=>{el.value=el.value==='✓'?'':'✓';calculateAll();saveState()})});
-window.addEventListener('hashchange',()=>{restoreState(false);renderSites()});
-showView(localStorage.getItem(AUTH_KEY)==='1'?'hub':'pin');
-}
-document.addEventListener('DOMContentLoaded',init);
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      prepareFullA4Pages
+    );
+  } else {
+    prepareFullA4Pages();
+  }
+})();
 </script>
-</body>
-</html>
