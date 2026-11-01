@@ -1,120 +1,80 @@
 
-<!-- FULL A4 PAGE LAYOUT FIX -->
+<!-- MOBILE A4 DISPLAY FIX -->
 <style>
-/* Original Work Hub layout */
-#timesheet_view .sheet {
-  width: 210mm !important;
-  max-width: none !important;
-  padding: 0 !important;
-  margin: 0 auto !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
+@media screen {
+  #timesheet_view .sheet-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
 
-/* Two full-size A4 sheets */
-#timesheet_view .sheet > .a4-page,
-#timesheet_view .sheet > .page-2-container {
-  display: block !important;
-  width: 210mm !important;
-  height: 297mm !important;
-  min-height: 297mm !important;
-  padding: 10mm !important;
-  margin: 0 auto 20px !important;
-  background: #fff !important;
-  box-shadow: 0 3px 10px #0002;
-  box-sizing: border-box;
-}
-
-/* Expand the tables to fill the pages */
-#timesheet_view .sheet > .a4-page > table,
-#timesheet_view .sheet > .page-2-container > table {
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  break-before: auto !important;
-  page-break-before: auto !important;
-}
-
-/* Compatibility with the newer Work Hub layout */
-#timesheet_view .sheet-page {
-  height: 297mm !important;
-  min-height: 297mm !important;
-  padding: 10mm !important;
-}
-
-#timesheet_view .sheet-page > table {
-  height: 100% !important;
-}
-
-#timesheet_view .sheet-page .page-label {
-  display: none !important;
-}
-
-/* Always show Page 2 on the website */
-#timesheet_view .sheet-page.empty-page2 {
-  display: block !important;
-}
-
-/* Print exactly A4-sized pages */
-@media print {
-  #timesheet_view .sheet > .a4-page,
-  #timesheet_view .sheet > .page-2-container,
   #timesheet_view .sheet-page {
+    zoom: var(--a4-scale, 1);
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-width: none !important;
+    padding: 10mm !important;
+    margin: 0 auto 14px !important;
+    overflow: hidden !important;
+  }
+}
+
+@media print {
+  #timesheet_view .sheet-page {
+    zoom: 1 !important;
     width: 210mm !important;
     height: 296mm !important;
-    min-height: 296mm !important;
-    padding: 10mm !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* Start Page 2 on a fresh physical sheet */
-  #timesheet_view .sheet >
-  .page-2-container:not(.empty-page2),
-  #timesheet_view
-  #page2_container.sheet-page:not(.empty-page2) {
-    break-before: page !important;
-    page-break-before: always !important;
-  }
-
-  /* Do not print an unused second page */
-  #timesheet_view #page2_container.empty-page2 {
-    display: none !important;
   }
 }
 </style>
 
 <script>
 (function () {
-  function prepareFullA4Pages() {
-    const sheet = document.querySelector(
-      '#timesheet_view .sheet'
+  function fitA4ToScreen() {
+    const wrapper = document.querySelector(
+      '#timesheet_view .sheet-scroll'
     );
 
-    if (!sheet) return;
+    const pages = document.querySelectorAll(
+      '#timesheet_view .sheet-page'
+    );
 
-    const firstTable = Array.from(
-      sheet.children
-    ).find(element => element.tagName === 'TABLE');
+    if (!wrapper || !pages.length) return;
 
-    if (!firstTable) return;
+    pages.forEach(page => {
+      page.style.setProperty('--a4-scale', '1');
+    });
 
-    const pageOne = document.createElement('div');
-    pageOne.className = 'a4-page';
+    const fullWidth =
+      pages[0].getBoundingClientRect().width;
 
-    sheet.insertBefore(pageOne, firstTable);
-    pageOne.appendChild(firstTable);
+    const availableWidth = wrapper.clientWidth - 4;
+
+    const scale = Math.min(
+      1,
+      availableWidth / fullWidth
+    );
+
+    pages.forEach(page => {
+      page.style.setProperty(
+        '--a4-scale',
+        String(scale)
+      );
+    });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener(
       'DOMContentLoaded',
-      prepareFullA4Pages
+      fitA4ToScreen
     );
   } else {
-    prepareFullA4Pages();
+    fitA4ToScreen();
   }
+
+  window.addEventListener('resize', fitA4ToScreen);
+  window.addEventListener('orientationchange', fitA4ToScreen);
+  window.addEventListener('afterprint', fitA4ToScreen);
 })();
 </script>
