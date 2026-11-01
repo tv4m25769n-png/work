@@ -1,8 +1,8 @@
-Here is the fully updated code with that exact logic built in.
-How Page 2 Works Now:
- * Dynamic Page 2 Printing: By default, if Page 2 is completely empty and no text or times has been entered into its rows, the script adds a smart print rule (.page-2-container { display: none; } when empty) so it will not print or export a blank second page when you only use Page 1.
- * Auto-Trigger on Typing: The moment you type a site name, date, or time into any row on Page 2, it instantly activates and tells your browser's PDF export and print engine to include Page 2 as a separate, clean sheet.
- * Preserved Nurture Layout: The official dual-page Nurture Pest Control form design, headers, grid borders, and row totals remain 100% untouched and identical to the paperwork you were provided.
+Here is how we will set up the scrolling document flow:
+ * Continuous Vertical Scroll: Page 1 and Page 2 sit on your screen stacked vertically like a physical notepad. When you run out of rows on Page 1, you simply scroll down to Page 2 on your screen (and you can scroll right back up to Page 1 anytime).
+ * Seamless Communication: Both pages belong to the same week. The mileage and column totals across both pages talk to each other so everything tallies into one master total.
+ * Smart Print / PDF Export: If Page 2 is empty, it stays hidden when you print or export to PDF (giving you just Page 1). The moment you type into Page 2, it includes it as the official second page of the PDF.
+Here is your updated code:
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -66,9 +66,8 @@ How Page 2 Works Now:
   .ac-zone { color: #38bdf8; font-size: 10px; font-weight: bold; }
   
   .sheet { width: 760px; margin: 0 auto; background: #fff; padding: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-  .page-break { page-break-before: always; break-before: page; margin-top: 12px; }
+  .page-break { page-break-before: always; break-before: page; margin-top: 30px; }
   
-  /* Dynamic hiding for Page 2 when empty */
   .page-2-container { display: block; }
   .page-2-container.empty-page2 { display: none; }
 
@@ -288,12 +287,20 @@ How Page 2 Works Now:
       </tr>
     </table>
 
-    <!-- PAGE 2 (Dynamically hidden when empty) -->
+    <!-- PAGE 2: Standalone Continuation Sheet -->
     <div id="page2_container" class="page-2-container empty-page2">
       <table class="page-break">
         <colgroup>
           <col style="width: 7.5%;"><col style="width: 24.5%;"><col style="width: 10.0%;"><col style="width: 5.5%;"><col style="width: 6.0%;"><col style="width: 5.5%;"><col style="width: 5.5%;"><col style="width: 5.5%;"><col style="width: 9.5%;"><col style="width: 10.5%;"><col style="width: 10.0%;">
         </colgroup>
+        <tr><td colspan="11" class="title-cell">NURTURE PEST CONTROL TIME SHEET — CONTINUATION</td></tr>
+        <tr>
+          <td colspan="3" rowspan="3" class="box-label">Name<input type="text" id="f_name_p2" class="cell-in header-box-input persist" value="Martin Law" readonly></td>
+          <td colspan="2" class="b-left">VEHICLE REG:</td>
+          <td colspan="6"><input type="text" id="f_reg_p2" class="cell-in left bold persist" readonly></td>
+        </tr>
+        <tr><td></td><td colspan="10"></td></tr>
+        <tr><td></td><td colspan="10"></td></tr>
         <tr>
           <td class="b-left">Date</td><td class="b-left">Site details</td><td class="b-center">Zone number</td><td class="b-center">R</td><td class="b-center">EFK</td><td class="b-center">F/U</td><td class="b-center">C/O</td><td class="b-center">T</td><td class="b-center">Start Time</td><td class="b-center">Finish Time</td><td class="b-center">Overtime</td>
         </tr>
@@ -362,7 +369,7 @@ How Page 2 Works Now:
     "Bovington Camp","Allenby Barracks Bovington","Lulworth Camp","Stanley Barracks Bovington","Blandford Camp","RNAS Yeovilton","RM Poole (Hamworthy)","Wyvern Barracks Exeter","CTCRM Lympstone","RM Bickleigh","Royal Citadel Plymouth","HMNB Devonport","RNAS Culdrose","Imjin Barracks Innsworth","RAF Fairford","Duke of Gloucester Barracks South Cerney","Beachley Barracks Chepstow",
     "RAF Northolt","RAF Wyton","RAF Alconbury","RAF Molesworth","Bassingbourn Barracks","Waterbeach Barracks","RAF Honington","RAF Barnham","RAF Lakenheath","RAF Mildenhall","RAF Feltwell","RAF Marham","Robertson Barracks Swanton Morley","Stanford Training Area (STANTA)","Gibraltar Barracks Bury St Edmunds","Wattisham Flying Station","Rock Barracks Woodbridge","RAF Wittering","Kendrew Barracks Cottesmore","St George's Barracks North Luffenham","Prince William of Gloucester Barracks Grantham","RAF Cranwell","RAF Barkston Heath","RAF Waddington","RAF Coningsby","RAF Digby","RAF Scampton","RAF Syerston","RAF Donna Nook","RAF Holbeach",
     "Chetwynd Barracks Chilwell","Gamecock Barracks Bramcote","MOD Stafford (Beacon Barracks)","Whittington Barracks Lichfield (DMS)","MOD Donnington","RAF Cosford","RAF Shawbury","Clive Barracks Tern Hill","Copthorne Barracks Shrewsbury","Credenhill (Stirling Lines)","MOD Kineton","MOD St Athan","Brecon Barracks","Sennybridge Training Area","Castlemartin Camp","RAF Valley","Dale Barracks Chester","Weeton Barracks","Fulwood Barracks Preston","RAF Woodvale",
-    "Catterick Garrison","Marne Barracks Catterick","Bourlon Barracks Catterick","Gaza Barracks Catterick","Megiddo Lines Catterick","Somme Barracks Catterick","Vimy Barracks Catterick","Imphal Barracks York","Queen Elizabeth Barracks Strensall","Alanbrooke Barracks Topcliffe","Claro Barracks Ripon","Uniacke Barracks Harrogate","Normandy Barracks Leconfield","RAF Leeming","RAF Fylingdales","RAF Menwith Hill","RAF Staxton Wold","Albemarle Barracks Harlow Hill","RAF Boulmer","RAF Spadeadam"
+    "Catterick Garrison","Marne Barracks Catterick","Bourlon Barracks Catterick","Gaza Barracks Catterick","Megiddo Lines Catterick","Somme Barracks Catterick","Vimy Barracks Catterick","Imphal Barracks York","Queen Elizabeth Barracks Strensall","Alanbrooke Barracks Topcliffe","Claro Barracks Ripon","Uniacke Barracks Harrogate","NormandyBarracks Leconfield","RAF Leeming","RAF Fylingdales","RAF Menwith Hill","RAF Staxton Wold","Albemarle Barracks Harlow Hill","RAF Boulmer","RAF Spadeadam"
   ];
   window.PERMANENT_SITES = DEFAULT_SITE_NAMES.map(name => ({ name, zone: "" }));
 
@@ -580,7 +587,6 @@ How Page 2 Works Now:
           saveState();
         });
       }
-      // Watch date, start/finish time inputs to trigger Page 2 visibility
       [0, 8, 9].forEach(cIdx => {
         document.getElementById(`r${r}_c${cIdx}`).addEventListener('input', checkPage2Visibility);
       });
