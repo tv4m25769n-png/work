@@ -1,80 +1,1098 @@
 
-<!-- MOBILE A4 DISPLAY FIX -->
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Martin Law — Work Hub</title>
 <style>
-@media screen {
-  #timesheet_view .sheet-scroll {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: visible !important;
-  }
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#111}
+button,input,select{font-family:inherit}
+button{cursor:pointer}
+#pin{position:fixed;inset:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:10}
+.panel{background:#1e293b;color:white;padding:25px;border-radius:12px;text-align:center;width:min(92%,340px)}
+.panel h2{color:#38bdf8;font-size:19px}
+.panel p{color:#cbd5e1;font-size:12px}
+#pininput{font-size:25px;letter-spacing:9px;text-align:center;width:165px;padding:9px;background:#0f172a;color:white;border:1px solid #64748b;border-radius:6px}
+#pinerror{min-height:18px;color:#fca5a5;font-size:12px;margin-top:10px}
+#hub{max-width:500px;margin:40px auto;padding:18px;color:#fff;display:none;text-align:center}
+#hub h1{font-size:22px}
+#hub small{color:#38bdf8}
+#hub button.main{display:block;width:100%;margin-top:25px;background:#1e293b;color:#34d399;padding:20px;border:1px solid #475569;border-radius:8px;font-weight:bold}
+#hub .smallbtn{background:transparent;border:0;color:#cbd5e1;margin:16px 8px;text-decoration:underline}
+#app{display:none;background:#e5e7eb;min-height:100vh;padding:8px}
+.dashboard{max-width:900px;margin:0 auto 10px;background:#111827;color:white;border-radius:8px;padding:10px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn{color:white;background:#374151;border:0;border-radius:4px;padding:8px 10px;font-weight:700;font-size:11px}
+.btn.green{background:#059669}
+.btn.blue{background:#2563eb}
+.btn.purple{background:#6d28d9}
+.counters{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:9px}
+.counter{background:#1f2937;text-align:center;border:1px solid #374151;border-radius:5px;padding:7px 3px;min-width:0}
+.counter small{display:block;color:#cbd5e1;font-size:9px}
+.counter strong{display:block;font-size:17px;margin:3px 0}
+.counter span{font-size:10px;color:#fbbf24}
+.counter input{width:48px}
+.counter select{width:55px}
+.counter input,.counter select{background:#0f172a;color:white;border:1px solid #64748b;font-size:10px}
+#sites{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #475569}
+#sites input{padding:6px;max-width:45%;border-radius:4px}
+#tags{max-height:110px;overflow:auto;display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:10px;background:#374151;padding:5px;border-radius:12px}
+.tag button{border:0;background:none;color:#fca5a5}
+#suggest{display:none;position:absolute;background:#1e293b;color:white;z-index:20;max-height:160px;overflow:auto;border:1px solid #64748b}
+#suggest div{padding:8px;cursor:pointer;font-size:12px;border-bottom:1px solid #475569}
 
-  #timesheet_view .sheet-page {
-    zoom: var(--a4-scale, 1);
-    width: 210mm !important;
-    height: 297mm !important;
-    min-height: 297mm !important;
-    max-width: none !important;
-    padding: 10mm !important;
-    margin: 0 auto 14px !important;
-    overflow: hidden !important;
-  }
+/* Full A4 pages scaled to fit the phone */
+#pages{width:100%;overflow:hidden}
+.slot{position:relative;width:210mm;height:297mm;margin:0 auto 15px}
+.paper{position:absolute;top:0;left:0;width:210mm;height:297mm;padding:9mm;background:white;transform-origin:top left;box-shadow:0 2px 7px #0002;overflow:hidden}
+.paper table{width:100%;height:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #111}
+.paper td,.paper th{border:1px solid #333;font-size:9px;padding:1px 2px;overflow:hidden;white-space:nowrap;text-overflow:clip;height:17px}
+.paper th{font-weight:bold;text-align:center}
+.paper .title{font-size:12px;font-weight:bold;text-align:center;height:23px}
+.paper .headbox{text-align:center;vertical-align:top}
+.paper .headbox input{display:block;text-align:center;font-weight:bold;font-size:12px;height:30px}
+.paper input.cell{width:100%;height:100%;min-height:16px;margin:0;padding:0 2px;border:0;background:transparent;color:black;font-size:10px;text-align:center;outline:none}
+.paper input.cell.left{text-align:left}
+.paper input.cell:focus{background:#e0f2fe;outline:1px solid #0284c7}
+.paper input.tick{cursor:pointer;font-size:14px;font-weight:bold}
+.paper input.mismatch{color:#c00}
+.paper tr.job td{height:27px}
+.paper .b{font-weight:bold}
+.paper .shade{background:#e5e7eb}
+.check{accent-color:#000;width:12px;height:12px}
+
+@media(max-width:650px){
+#app{padding:5px}
+.counters{grid-template-columns:repeat(2,1fr)}
+.counter:last-child{grid-column:span 2}
 }
 
-@media print {
-  #timesheet_view .sheet-page {
-    zoom: 1 !important;
-    width: 210mm !important;
-    height: 296mm !important;
-  }
+@page{size:A4 portrait;margin:0}
+@media print{
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{width:210mm!important;margin:0!important;background:white!important;overflow:visible!important}
+#pin,#hub,.dashboard,#suggest{display:none!important}
+#app{display:block!important;padding:0!important;min-height:0!important;background:white!important}
+#pages{width:210mm!important;overflow:visible!important}
+.slot{width:210mm!important;height:296mm!important;margin:0!important;break-inside:avoid!important;page-break-inside:avoid!important}
+.paper{position:static!important;transform:none!important;width:210mm!important;height:296mm!important;box-shadow:none!important;padding:9mm!important}
+#second{break-before:page!important;page-break-before:always!important}
+#second.empty{display:none!important}
+.paper input::placeholder{color:transparent!important;-webkit-text-fill-color:transparent!important}
+.paper input.cell:focus{background:transparent;outline:0}
 }
 </style>
+</head>
+<body>
+
+<div id="pin">
+<div class="panel">
+<h2>work.martinlaw.me</h2>
+<p>Enter your 4-digit PIN</p>
+<input id="pininput" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+<button class="btn green" id="unlock">Unlock</button>
+<div id="pinerror"></div>
+</div>
+</div>
+
+<div id="hub">
+<h1>Martin Law — Work Hub</h1>
+<small>work.martinlaw.me</small>
+<button class="main" id="opentool">Weekly Mileage &amp; Timesheet</button>
+<button class="smallbtn" id="changepin">Change PIN</button>
+<button class="smallbtn" id="lock">Lock Hub</button>
+</div>
+
+<div id="app">
+<div class="dashboard">
+<div class="controls">
+<button class="btn" id="back">← Back to Hub</button>
+<strong style="color:#34d399;font-size:13px">Live Weekly Counter</strong>
+</div>
+<hr style="border:0;border-top:1px solid #374151">
+<div class="controls">
+<button class="btn blue" id="link">Copy Sync Link</button>
+<button class="btn blue" id="export">Export Save</button>
+<button class="btn blue" id="import">Import Save</button>
+<button class="btn purple" id="managesites">Manage Sites</button>
+<button class="btn" id="go2">Go to Page 2</button>
+<button class="btn" id="newweek">New Week</button>
+<button class="btn green" id="pdf">Download / Save as PDF</button>
+</div>
+
+<div class="counters">
+<div class="counter">
+<small>WORK MILES</small>
+<strong id="cw">0</strong>
+<span id="ew">5-day est: 0</span>
+</div>
+<div class="counter">
+<small>PRIVATE MILES</small>
+<strong id="cp">0</strong>
+<span id="days">0 days logged</span>
+</div>
+<div class="counter">
+<small>OVERTIME HRS</small>
+<strong id="co">0</strong>
+<div>
+<span>£</span>
+<input id="ot_rate" value="15.66" inputmode="decimal">
+<select id="ot_mult">
+<option value="1">1x</option>
+<option value="1.25">1.25x</option>
+<option selected value="1.5">1.5x</option>
+<option value="2">2x</option>
+</select>
+</div>
+<span id="earnings">£0.00</span>
+</div>
+<div class="counter">
+<small>TASKS</small>
+<strong id="ct">0</strong>
+<span id="siteslogged">0 sites logged</span>
+</div>
+<div class="counter">
+<small>TOTAL HOURS</small>
+<strong id="ch">0h 00m</strong>
+<span id="breaks">0 days · −0m break</span>
+</div>
+</div>
+
+<div id="sites">
+<div class="controls">
+<input id="site_name" placeholder="Site name">
+<input id="site_zone" placeholder="Zone">
+<button id="addsite" class="btn green">+ Add Site</button>
+</div>
+<div id="tags"></div>
+</div>
+</div>
+<input type="file" id="file" accept=".json" hidden>
+<div id="suggest"></div>
+<div id="pages"></div>
+</div>
 
 <script>
-(function () {
-  function fitA4ToScreen() {
-    const wrapper = document.querySelector(
-      '#timesheet_view .sheet-scroll'
-    );
+'use strict';
 
-    const pages = document.querySelectorAll(
-      '#timesheet_view .sheet-page'
-    );
+const $=id=>document.getElementById(id);
+const SKEY='nurture_ts_master_v3';
+const CKEY='ml_carry_odo';
+const ZKEY='nurture_saved_sites_v3';
+const PKEY='ml_hub_pin';
+const AKEY='ml_hub_unlocked';
 
-    if (!wrapper || !pages.length) return;
+const DEFAULT_SITES=`Buckingham Palace|St James's Palace|Clarence House|Kensington Palace|Windsor Castle|Frogmore House|Hampton Court Palace|Tower of London|Horse Guards|MOD Main Building Whitehall|Old War Office Whitehall|Wellington Barracks|Hyde Park Barracks|Regent's Park Barracks|Chelsea Barracks|Royal Hospital Chelsea|Victoria Barracks Windsor|Combermere Barracks Windsor|Royal Artillery Barracks Woolwich|Woolwich Garrison|Napier Lines Woolwich|Cavalry Barracks Hounslow|Armoury House (HAC)|King's Troop RHA Woolwich|Latchmere House|Kneller Hall Twickenham|Northwood Headquarters|RMAS Sandhurst|Watchfield / Defence Academy Shrivenham|Denison Barracks Hermitage|Brock Barracks Reading|AWE Aldermaston|AWE Burghfield|Arborfield Garrison|Bramley Training Area|RAF Welford|Aldershot Garrison|Lille Barracks Aldershot|Mons Barracks Aldershot|Buller Barracks Aldershot|Travers Barracks Aldershot|Browning Barracks Aldershot|Gale Barracks Aldershot|Duchess of Kent Barracks Aldershot|Montgomery Lines Aldershot|St Omer Barracks Aldershot|Normandy Barracks Aldershot|Thornhill Barracks Aldershot|Wavell Barracks Aldershot|Minley Station|Gibraltar Barracks Minley|Minley Manor|Deepcut Barracks (Princess Royal Barracks)|Keogh Barracks Ash Vale|Pirbright Camp (ATC Pirbright)|Alexander Barracks Pirbright|Elizabeth Barracks Pirbright|Brunswick Camp Pirbright|Headley Court|RAF Odiham|RAF Oakhanger|Bordon & Longmoor Garrison|Longmoor Camp|Barton Stacey Camp|MOD Worthy Down|Sir John Moore Barracks Winchester|Southwick Park (HMS Dryad)|Middle Wallop (AACen)|Andover (Marlborough Lines / Army HQ)|Marchwood Military Port|HMNB Portsmouth|HMS Nelson Portsmouth|HMS Excellent Whale Island|HMS Collingwood Fareham|HMS Sultan Gosport|HMS Temeraire Portsmouth|Fort Blockhouse Gosport|DM Gosport|Horsea Island|Tipner Ranges|Browndown Camp|Thorney Island (Baker Barracks)|RAF Medmenham|Danesfield House Medmenham|RAF High Wycombe (Air Command)|RAF Halton|RAF Daws Hill|Wilton Park Beaconsfield|RAF Brize Norton|RAF Benson|Dalton Barracks Abingdon|Edward Brooks Barracks Abingdon|Bicester Garrison|St George's Barracks Bicester|St David's Barracks Bicester|MOD Bicester|RAF Weston-on-the-Green|Vauxhall Barracks Didcot|RAF Croughton|RAF Barford St John|Chicksands (DIFC)|RAF Henlow|Brompton Barracks Chatham|Chattenden Barracks|Lodge Hill Camp|Upnor Castle / Upper Upnor|Invicta Park Barracks Maidstone|Shorncliffe Garrison|Sir John Moore Barracks Shorncliffe|Risborough Barracks Shorncliffe|Burgoyne Barracks Shorncliffe|Somerset Barracks Shorncliffe|Napier Barracks Folkestone|St Martin's Plain Camp|Hythe Ranges|Lydd Ranges / Lydd Camp|Dover Duke of York's Royal Military School|Crowborough Training Camp|Newhaven Fort / Reserve Centre|Colchester Garrison|Merville Barracks Colchester|Goojera Barracks Colchester|Foynes Barracks Colchester|Carver Barracks Wimbish|MOD Shoeburyness (Foulness Island)|Fingringhoe Ranges|Tidworth Camp / Garrison|Aliwal Barracks Tidworth|Assaye Barracks Tidworth|Bhurtpore Barracks Tidworth|Candahar Barracks Tidworth|Delhi Barracks Tidworth|Jellalabad Barracks Tidworth|Lucknow Barracks Tidworth|Mooltan Barracks Tidworth|Swinton Barracks Perham Down|Bulford Camp / Garrison|Kiwi Barracks Bulford|Picton Barracks Bulford|Ward Barracks Bulford|Wing Barracks Bulford|Larkhill Garrison|Purvis Lines Larkhill|Horne Barracks Larkhill|Roberts Barracks Larkhill|Warminster Garrison|Battlesbury Barracks Warminster|Harman Lines Warminster|Waterloo Lines Warminster|Upavon Station (Trenchard Lines)|MOD Boscombe Down|Porton Down (Dstl)|MOD Lyneham|MOD Corsham|Azimghur Barracks Colerne|Buckley Barracks Hullavington|Bovington Camp|Allenby Barracks Bovington|Lulworth Camp|Stanley Barracks Bovington|Blandford Camp|RNAS Yeovilton|RM Poole (Hamworthy)|Wyvern Barracks Exeter|CTCRM Lympstone|RM Bickleigh|Royal Citadel Plymouth|HMNB Devonport|RNAS Culdrose|Imjin Barracks Innsworth|RAF Fairford|Duke of Gloucester Barracks South Cerney|Beachley Barracks Chepstow|RAF Northolt|RAF Wyton|RAF Alconbury|RAF Molesworth|Bassingbourn Barracks|Waterbeach Barracks|RAF Honington|RAF Barnham|RAF Lakenheath|RAF Mildenhall|RAF Feltwell|RAF Marham|Robertson Barracks Swanton Morley|Stanford Training Area (STANTA)|Gibraltar Barracks Bury St Edmunds|Wattisham Flying Station|Rock Barracks Woodbridge|RAF Wittering|Kendrew Barracks Cottesmore|St George's Barracks North Luffenham|Prince William of Gloucester Barracks Grantham|RAF Cranwell|RAF Barkston Heath|RAF Waddington|RAF Coningsby|RAF Digby|RAF Scampton|RAF Syerston|RAF Donna Nook|RAF Holbeach|Chetwynd Barracks Chilwell|Gamecock Barracks Bramcote|MOD Stafford (Beacon Barracks)|Whittington Barracks Lichfield (DMS)|MOD Donnington|RAF Cosford|RAF Shawbury|Clive Barracks Tern Hill|Copthorne Barracks Shrewsbury|Credenhill (Stirling Lines)|MOD Kineton|MOD St Athan|Brecon Barracks|Sennybridge Training Area|Castlemartin Camp|RAF Valley|Dale Barracks Chester|Weeton Barracks|Fulwood Barracks Preston|RAF Woodvale|Catterick Garrison|Marne Barracks Catterick|Bourlon Barracks Catterick|Gaza Barracks Catterick|Megiddo Lines Catterick|Somme Barracks Catterick|Vimy Barracks Catterick|Imphal Barracks York|Queen Elizabeth Barracks Strensall|Alanbrooke Barracks Topcliffe|Claro Barracks Ripon|Uniacke Barracks Harrogate|Normandy Barracks Leconfield|RAF Leeming|RAF Fylingdales|RAF Menwith Hill|RAF Staxton Wold|Albemarle Barracks Harlow Hill|RAF Boulmer|RAF Spadeadam`.split('|');
 
-    pages.forEach(page => {
-      page.style.setProperty('--a4-scale', '1');
-    });
+const totalRows=43;
+const firstRows=17;
+const fields=['r','efk','fu','co','t'];
 
-    const fullWidth =
-      pages[0].getBoundingClientRect().width;
+let manualStart=Array(7).fill(false);
+let autoStart=Array(7).fill(null);
+let manualOT=Array(43).fill(false);
+let loading=false;
+let hashTimer;
 
-    const availableWidth = wrapper.clientWidth - 4;
+const get=id=>$(id)?.value?.trim()||'';
+const number=id=>get(id)===''?NaN:Number(get(id));
+const good=Number.isFinite;
+const round=n=>Math.round(n*10)/10;
 
-    const scale = Math.min(
-      1,
-      availableWidth / fullWidth
-    );
+function set(id,n){
+if($(id))$(id).value=good(n)?String(Math.round(n*100)/100):'';
+}
 
-    pages.forEach(page => {
-      page.style.setProperty(
-        '--a4-scale',
-        String(scale)
-      );
-    });
-  }
+function view(v){
+$('pin').style.display=v==='pin'?'flex':'none';
+$('hub').style.display=v==='hub'?'block':'none';
+$('app').style.display=v==='app'?'block':'none';
+if(v==='app')requestAnimationFrame(fit);
+}
 
-  if (document.readyState === 'loading') {
-    document.addEventListener(
-      'DOMContentLoaded',
-      fitA4ToScreen
-    );
-  } else {
-    fitA4ToScreen();
-  }
+function verify(){
+if(get('pininput')===(localStorage.getItem(PKEY)||'1234')){
+localStorage.setItem(AKEY,'1');
+$('pininput').value='';
+$('pinerror').textContent='';
+view('hub');
+}else{
+$('pinerror').textContent='Incorrect PIN';
+$('pininput').value='';
+}
+}
 
-  window.addEventListener('resize', fitA4ToScreen);
-  window.addEventListener('orientationchange', fitA4ToScreen);
-  window.addEventListener('afterprint', fitA4ToScreen);
-})();
+/* Scale full A4 pages to screen width */
+function fit(){
+let width=$('pages').clientWidth;
+if(!width)return;
+let w=210*96/25.4;
+let h=297*96/25.4;
+let scale=Math.min(1,(width-2)/w);
+document.querySelectorAll('.slot').forEach(x=>{
+x.style.width=(w*scale)+'px';
+x.style.height=(h*scale)+'px';
+x.firstElementChild.style.transform=`scale(${scale})`;
+});
+}
+
+const colgroup='<colgroup>'+
+[7.5,24.5,10,5.5,6,5.5,5.5,5.5,9.5,10.5,10]
+.map(w=>`<col style="width:${w}%">`).join('')+
+'</colgroup>';
+
+function input(id,classes='weekly',extra=''){
+return `<input type="text" id="${id}" class="cell ${classes}" ${extra}>`;
+}
+
+function jobHeader(){
+return '<tr>'+
+['Date','Site details','Zone number','R','EFK','F/U','C/O','T','Start Time','Finish Time','Overtime']
+.map(x=>`<th>${x}</th>`).join('')+'</tr>';
+}
+
+function rows(a,b){
+let out='';
+for(let r=a;r<b;r++){
+out+=`<tr class="job">
+<td>${input(`r${r}_c0`,'weekly date','inputmode="numeric" placeholder="DD/MM"')}</td>
+<td>${input(`r${r}_c1`,'weekly site left','autocomplete="off"')}</td>
+<td>${input(`r${r}_c2`,'weekly','inputmode="numeric"')}</td>`;
+for(let c=3;c<8;c++){
+out+=`<td>${input(`r${r}_c${c}`,'weekly tick','readonly')}</td>`;
+}
+out+=`<td>${input(`r${r}_c8`,'weekly time','inputmode="numeric" placeholder="HH:MM"')}</td>
+<td>${input(`r${r}_c9`,'weekly time','inputmode="numeric" placeholder="HH:MM"')}</td>
+<td>${input(`r${r}_c10`,'weekly overtime','inputmode="decimal"')}</td>
+</tr>`;
+}
+return out;
+}
+
+function sumRow(label,suffix){
+return `<tr>
+<td colspan="3" class="b">${label}</td>
+${fields.map(f=>`<td>${input(`tot_${f}${suffix}`,'','readonly')}</td>`).join('')}
+<td colspan="2"></td>
+<td>${input(`tot_ot${suffix}`,'','readonly')}</td>
+</tr>`;
+}
+
+/* Build official-style two-page timesheet */
+function build(){
+let h=`<div id="first" class="slot">
+<section class="paper"><table>${colgroup}
+<tr><td colspan="11" class="title">NURTURE PEST CONTROL TIME SHEET</td></tr>
+<tr>
+<td colspan="3" rowspan="3" class="headbox">
+Name${input('f_name','persist','value="Martin Law"')}
+</td>
+<td colspan="2" class="b">VEHICLE REG:</td>
+<td colspan="6">${input('f_reg','persist')}</td>
+</tr>
+<tr>
+<th></th><th>Date</th>
+<th colspan="2">Start Mileage</th>
+<th colspan="2">Finish Mileage</th>
+<th>Work Miles</th>
+<th>Private Miles</th>
+</tr>`;
+
+for(let d=0;d<7;d++){
+h+='<tr>';
+
+if(d===1){
+h+=`<td colspan="3" rowspan="3" class="headbox">
+Week commencing
+${input('f_wc','weekly date','placeholder="DD/MM/YY" inputmode="numeric"')}
+</td>`;
+}
+if(d===4){
+h+=`<td colspan="3" rowspan="3" class="headbox">
+Team Leader
+${input('f_tl','persist')}
+</td>`;
+}
+
+h+=`<th>${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]}</th>
+<td>${input(`m_date_${d}`,'weekly date','inputmode="numeric" placeholder="DD/MM"')}</td>
+<td colspan="2">${input(`m_start_${d}`,'weekly mileage','inputmode="decimal"')}</td>
+<td colspan="2">${input(`m_fin_${d}`,'weekly mileage','inputmode="decimal"')}</td>
+<td>${input(`m_work_${d}`,'weekly mileage','inputmode="decimal"')}</td>
+<td>${input(`m_priv_${d}`,'weekly mileage','inputmode="decimal"')}</td>
+</tr>`;
+}
+
+h+=`<tr>
+<td colspan="5"></td>
+<td colspan="2" class="b">TOTALS</td>
+<td colspan="2">${input('m_tot_fin','','readonly')}</td>
+<td>${input('m_tot_work','','readonly')}</td>
+<td>${input('m_tot_priv','','readonly')}</td>
+</tr>
+<tr>
+<td colspan="3" style="font-size:8px;text-align:center">
+PLEASE CIRCLE DAYS COVERED FOR ON CALL ALLOWANCE
+</td>`;
+
+for(const day of ['fri','sat','sun','mon']){
+h+=`<td colspan="2" style="text-align:center">
+<label><input type="checkbox" class="check weekly" id="d_${day}">${day.toUpperCase()}</label>
+</td>`;
+}
+
+h+=`</tr>
+${jobHeader()}
+${rows(0,firstRows)}
+<tr>
+<td colspan="3"></td>
+${fields.map(x=>`<th>${x.toUpperCase()}</th>`).join('')}
+<td colspan="2"></td><th>OT</th>
+</tr>
+${sumRow('PAGE 1 TOTALS','_p1')}
+</table></section></div>`;
+
+h+=`<div id="second" class="slot">
+<section class="paper"><table>
+${colgroup}
+${jobHeader()}
+${rows(firstRows,totalRows)}
+<tr class="shade">
+<td colspan="3"></td>
+${fields.map(x=>`<th>${x.toUpperCase()}</th>`).join('')}
+<td colspan="2"></td><th>OT</th>
+</tr>
+${sumRow('Page 2','_p2')}
+${sumRow('Page 1','_p1_copy')}
+${sumRow('TOTALS','')}
+<tr>
+<td colspan="2" class="b">PRIVATE MILES</td>
+<td>${input('m_tot_priv_footer','','readonly')}</td>
+<td colspan="8"></td>
+</tr>
+</table></section></div>`;
+
+$('pages').innerHTML=h;
+}
+
+/* Dates and times */
+function asDate(raw,y){
+let m=raw.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+if(!m)return null;
+let year=m[3]?+m[3]:y;
+if(year<100)year+=2000;
+let d=new Date(year,+m[2]-1,+m[1],12);
+return d.getFullYear()===year&&
+d.getMonth()===+m[2]-1&&
+d.getDate()===+m[1]?d:null;
+}
+
+function fillDates(){
+const d=asDate(get('f_wc'),new Date().getFullYear());
+if(!d)return;
+for(let i=0;i<7;i++){
+let x=new Date(d);
+x.setDate(d.getDate()+i);
+$(`m_date_${i}`).value=
+String(x.getDate()).padStart(2,'0')+'/'+
+String(x.getMonth()+1).padStart(2,'0');
+}
+}
+
+function rowDate(r){
+let s='';
+for(let i=r;i>=0;i--){
+if(get(`r${i}_c0`)){
+s=get(`r${i}_c0`);
+break;
+}
+}
+let wc=asDate(get('f_wc'),new Date().getFullYear());
+return asDate(s,wc?.getFullYear()||new Date().getFullYear());
+}
+
+function time(s){
+let m=s.match(/^(\d{1,2}):(\d{2})$/);
+return m&&+m[1]<24&&+m[2]<60?
++m[1]*60 + +m[2]:null;
+}
+
+function formatDate(el){
+let s=el.value.replace(/\D/g,'').slice(0,8);
+el.value=s.length>4?
+s.slice(0,2)+'/'+s.slice(2,4)+'/'+s.slice(4):
+s.length>2?s.slice(0,2)+'/'+s.slice(2):s;
+}
+
+function formatTime(el){
+let s=el.value.replace(/\D/g,'').slice(0,4);
+el.value=s.length===4?
+s.slice(0,2)+':'+s.slice(2):
+s.length===3?s.slice(0,1)+':'+s.slice(1):s;
+}
+
+/* Mileage calculations */
+function recomputeMileage(){
+if(get('m_start_0')===''&&localStorage.getItem(CKEY)!==null){
+set('m_start_0',Number(localStorage.getItem(CKEY)));
+}
+
+for(let i=0;i<7;i++){
+let old=number(`m_start_${i}`);
+let prev=number(`m_fin_${i-1}`);
+
+if(i>0){
+if(!manualStart[i]||!good(old)||
+good(autoStart[i])&&old===autoStart[i]){
+set(`m_start_${i}`,prev);
+autoStart[i]=good(prev)?prev:null;
+manualStart[i]=false;
+}
+else if(good(prev)&&old>prev){
+let gap=round(old-prev);
+let oldP=number(`m_priv_${i-1}`);
+set(`m_priv_${i-1}`,(good(oldP)?oldP:0)+gap);
+
+let pstart=number(`m_start_${i-1}`);
+let work=number(`m_work_${i-1}`);
+let priv=number(`m_priv_${i-1}`);
+
+if(good(pstart)){
+set(`m_fin_${i-1}`,pstart+
+(good(work)?work:0)+(good(priv)?priv:0));
+}
+manualStart[i]=false;
+autoStart[i]=old;
+}
+
+$(`m_start_${i}`).classList.toggle(
+'mismatch',
+good(prev)&&good(number(`m_start_${i}`))&&
+number(`m_start_${i}`)<prev
+);
+}
+
+let start=number(`m_start_${i}`);
+let work=number(`m_work_${i}`);
+let priv=number(`m_priv_${i}`);
+
+if(good(start)&&(good(work)||good(priv))){
+set(`m_fin_${i}`,start+
+(good(work)?work:0)+(good(priv)?priv:0));
+}
+}
+
+let w=0,p=0,last=NaN,hw=false,hp=false;
+for(let i=0;i<7;i++){
+let a=number(`m_work_${i}`);
+let b=number(`m_priv_${i}`);
+let f=number(`m_fin_${i}`);
+if(good(a)){w+=a;hw=true}
+if(good(b)){p+=b;hp=true}
+if(good(f))last=f;
+}
+
+set('m_tot_work',hw?w:NaN);
+set('m_tot_priv',hp?p:NaN);
+set('m_tot_priv_footer',hp?p:NaN);
+set('m_tot_fin',last);
+}
+
+/* Overtime */
+function rowOT(r){
+if(manualOT[r])return;
+
+let a=time(get(`r${r}_c8`));
+let b=time(get(`r${r}_c9`));
+
+if(a===null||b===null){
+$(`r${r}_c10`).value='';
+return;
+}
+
+if(b<a)b+=1440;
+
+let d=rowDate(r);
+let weekend=d&&(d.getDay()===0||d.getDay()===6);
+let ot=0;
+
+if(weekend){
+ot=b-a;
+if(ot>360)ot-=30;
+}else{
+ot=Math.max(0,Math.min(480,b)-a-30)+
+Math.max(0,b-Math.max(1050,a)-30);
+}
+
+ot=Math.round(Math.max(0,ot)/15)*15;
+set(`r${r}_c10`,ot?ot/60:NaN);
+}
+
+/* Totals and dashboard */
+function totals(){
+let groups=new Map();
+let current='undated';
+let sites=0;
+
+for(let r=0;r<totalRows;r++){
+if(get(`r${r}_c1`))sites++;
+if(get(`r${r}_c0`)){
+let d=rowDate(r);
+current=d?d.toDateString():'invalid-'+r;
+}
+let a=time(get(`r${r}_c8`));
+let b=time(get(`r${r}_c9`));
+if(a!==null&&b!==null){
+groups.set(current,
+(groups.get(current)||0)+
+((b<a?b+1440:b)-a));
+}
+}
+
+let mins=0,breakMins=0;
+for(let duration of groups.values()){
+let br=duration>360?30:0;
+mins+=duration-br;
+breakMins+=br;
+}
+
+let tasks=0,ot=0;
+
+for(let c of [3,4,5,6,7,10]){
+let left=0,right=0,hasL=false,hasR=false;
+for(let r=0;r<totalRows;r++){
+let x=get(`r${r}_c${c}`);
+if(!x)continue;
+let n=c===10?Number(x)||0:1;
+if(r<firstRows){left+=n;hasL=true}
+else{right+=n;hasR=true}
+}
+let key=c===10?'ot':fields[c-3];
+
+set(`tot_${key}_p1`,hasL?left:NaN);
+set(`tot_${key}_p2`,hasR?right:NaN);
+set(`tot_${key}_p1_copy`,hasL?left:NaN);
+set(`tot_${key}`,hasL||hasR?left+right:NaN);
+
+if(c===10)ot=left+right;
+else tasks+=left+right;
+}
+
+let w=0,p=0,days=0;
+for(let i=0;i<7;i++){
+let a=number(`m_work_${i}`);
+let b=number(`m_priv_${i}`);
+if(good(a)&&a>0){w+=a;days++}
+if(good(b)&&b>0)p+=b;
+}
+
+$('cw').textContent=round(w);
+$('cp').textContent=round(p);
+$('co').textContent=Math.round(ot*100)/100;
+$('ct').textContent=tasks;
+$('ch').textContent=Math.floor(mins/60)+'h '+
+String(mins%60).padStart(2,'0')+'m';
+
+$('ew').textContent='5-day est: '+
+(days?Math.round(w/days*5):0)+' mi';
+
+$('days').textContent=days+' days logged';
+$('siteslogged').textContent=sites+' sites logged';
+
+$('breaks').textContent=groups.size+
+' days · −'+breakMins+'m break';
+
+$('earnings').textContent='£'+
+(ot*(Number(get('ot_rate'))||0)*
+(Number(get('ot_mult'))||1)).toFixed(2)+' est';
+
+let used=false;
+for(let r=firstRows;r<totalRows;r++){
+for(let c=0;c<11;c++){
+if(get(`r${r}_c${c}`))used=true;
+}
+}
+$('second').classList.toggle('empty',!used);
+}
+
+/* Saved sites */
+function customSites(){
+try{
+let x=JSON.parse(localStorage.getItem(ZKEY)||'[]');
+return Array.isArray(x)?x:[];
+}catch{return []}
+}
+
+function allSites(){
+let map=new Map(DEFAULT_SITES.map(x=>[
+x.toLowerCase(),{name:x,zone:''}
+]));
+for(let s of customSites()){
+if(s&&s.name){
+map.set(s.name.toLowerCase(),
+{name:s.name,zone:s.zone||''});
+}
+}
+return [...map.values()]
+.sort((a,b)=>a.name.localeCompare(b.name));
+}
+
+function renderSites(){
+let box=$('tags');
+box.replaceChildren();
+for(let s of customSites()){
+let chip=document.createElement('span');
+chip.className='tag';
+chip.textContent=s.name+
+(s.zone?' (Zone '+s.zone+')':'');
+
+let b=document.createElement('button');
+b.textContent='×';
+b.onclick=()=>{
+localStorage.setItem(ZKEY,
+JSON.stringify(customSites()
+.filter(x=>x.name!==s.name)));
+renderSites();
+save();
+};
+chip.append(b);
+box.append(chip);
+}
+}
+
+function suggest(input,r){
+let q=input.value.trim().toLowerCase();
+let box=$('suggest');
+if(!q){box.style.display='none';return}
+
+let matches=allSites().filter(s=>
+s.name.toLowerCase().includes(q)).slice(0,10);
+
+if(!matches.length){box.style.display='none';return}
+
+let rect=input.getBoundingClientRect();
+box.style.left=(rect.left+scrollX)+'px';
+box.style.top=(rect.bottom+scrollY)+'px';
+box.style.width=Math.max(220,rect.width)+'px';
+box.replaceChildren();
+
+for(let s of matches){
+let d=document.createElement('div');
+d.textContent=s.name+(s.zone?' — Z'+s.zone:'');
+d.onpointerdown=e=>{
+e.preventDefault();
+input.value=s.name;
+if(!get(`r${r}_c2`)){
+$(`r${r}_c2`).value=s.zone;
+}
+box.style.display='none';
+totals();
+save();
+};
+box.append(d);
+}
+box.style.display='block';
+}
+
+/* Save and sync */
+function snapshot(){
+let inputs={},checks={};
+
+document.querySelectorAll(
+'input.cell:not([readonly]),input.tick,#ot_rate,#ot_mult'
+).forEach(e=>{
+if(e.id&&e.value!=='')inputs[e.id]=e.value;
+});
+
+document.querySelectorAll('.check').forEach(e=>
+checks[e.id]=e.checked);
+
+return {
+inputs,checks,
+meta:{
+manualStarts:[...manualStart],
+autoStarts:[...autoStart],
+manualOvertime:[...manualOT]
+}
+};
+}
+
+function encode(o){
+let str=new TextEncoder().encode(JSON.stringify(o));
+let bin='';
+str.forEach(x=>bin+=String.fromCharCode(x));
+return btoa(bin).replace(/\+/g,'-')
+.replace(/\//g,'_').replace(/=+$/,'');
+}
+
+function decode(s){
+try{
+let x=s.replace(/^#/,'').replace(/-/g,'+')
+.replace(/_/g,'/');
+while(x.length%4)x+='=';
+return JSON.parse(new TextDecoder().decode(
+Uint8Array.from(atob(x),c=>c.charCodeAt(0))
+));
+}catch{return null}
+}
+
+function packageState(){
+return {
+s:snapshot(),
+c:customSites(),
+o:localStorage.getItem(CKEY)||''
+};
+}
+
+function save(){
+if(loading)return;
+try{
+localStorage.setItem(SKEY,JSON.stringify(snapshot()));
+clearTimeout(hashTimer);
+hashTimer=setTimeout(()=>{
+try{
+history.replaceState(null,'',
+'#'+encode(packageState()));
+}catch(e){}
+},250);
+}catch(e){console.error(e)}
+}
+
+function load(skipHash=false){
+loading=true;
+try{
+if(!skipHash&&location.hash.length>2){
+let x=decode(location.hash);
+if(x?.s?.inputs){
+localStorage.setItem(SKEY,JSON.stringify(x.s));
+if(Array.isArray(x.c)){
+localStorage.setItem(ZKEY,JSON.stringify(x.c));
+}
+if(typeof x.o==='string'){
+localStorage.setItem(CKEY,x.o);
+}
+}
+}
+
+let s=JSON.parse(localStorage.getItem(SKEY)||'null');
+
+if(s?.inputs){
+document.querySelectorAll(
+'input.cell:not([readonly]),input.tick,#ot_rate,#ot_mult'
+).forEach(e=>{
+e.value=e.id==='f_name'?'Martin Law':
+e.id==='ot_rate'?'15.66':
+e.id==='ot_mult'?'1.5':'';
+});
+
+document.querySelectorAll('.check')
+.forEach(e=>e.checked=false);
+
+for(let [id,v] of Object.entries(s.inputs)){
+let e=$(id);
+if(e&&(e.classList.contains('tick')||
+!e.readOnly)&&['string','number'].includes(typeof v)){
+e.value=String(v);
+}
+}
+
+for(let [id,v] of Object.entries(s.checks||{})){
+if($(id))$(id).checked=!!v;
+}
+
+manualStart=Array.from({length:7},(_,i)=>
+!!s.meta?.manualStarts?.[i]);
+
+autoStart=Array.from({length:7},(_,i)=>
+typeof s.meta?.autoStarts?.[i]==='number'?
+s.meta.autoStarts[i]:null);
+
+manualOT=Array.from({length:43},(_,i)=>
+!!s.meta?.manualOvertime?.[i]);
+
+if(!s.meta){
+for(let i=1;i<7;i++){
+let a=number(`m_start_${i}`);
+let b=number(`m_fin_${i-1}`);
+manualStart[i]=good(a)&&(!good(b)||a!==b);
+autoStart[i]=a===b?b:null;
+}
+}
+}
+
+recomputeMileage();
+totals();
+}catch(e){console.error(e)}
+finally{loading=false}
+}
+
+/* JSON backup */
+function backup(){
+save();
+let data={
+timestamp:Date.now(),
+storage:localStorage.getItem(SKEY),
+sites:localStorage.getItem(ZKEY),
+pin:localStorage.getItem(PKEY),
+carry:localStorage.getItem(CKEY)
+};
+
+let u=URL.createObjectURL(
+new Blob([JSON.stringify(data,null,2)],
+{type:'application/json'})
+);
+
+let a=document.createElement('a');
+a.href=u;
+a.download='work_hub_backup_'+
+new Date().toISOString().slice(0,10)+'.json';
+document.body.append(a);
+a.click();
+a.remove();
+setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+
+function importBackup(f){
+if(!f)return;
+let rd=new FileReader();
+rd.onload=()=>{
+try{
+let x=JSON.parse(rd.result);
+if(!JSON.parse(x.storage)?.inputs){
+throw Error('Invalid');
+}
+localStorage.setItem(SKEY,x.storage);
+if(typeof x.sites==='string'){
+localStorage.setItem(ZKEY,x.sites);
+}
+if(typeof x.carry==='string'){
+localStorage.setItem(CKEY,x.carry);
+}
+if(/^\d{4}$/.test(x.pin||'')){
+localStorage.setItem(PKEY,x.pin);
+}
+load(true);
+renderSites();
+save();
+alert('Backup imported');
+}catch{
+alert('Invalid backup file');
+}finally{$('file').value=''}
+};
+rd.readAsText(f);
+}
+
+/* New week */
+function newWeek(){
+if(!confirm(
+'Start a new week? Your name, vehicle, leader and saved sites stay.'
+))return;
+
+let last=NaN;
+for(let i=6;i>=0;i--){
+if(good(number(`m_fin_${i}`))){
+last=number(`m_fin_${i}`);
+break;
+}
+}
+
+if(good(last)){
+localStorage.setItem(CKEY,String(last));
+}
+
+document.querySelectorAll('.weekly').forEach(e=>
+e.type==='checkbox'?e.checked=false:e.value='');
+
+manualStart.fill(false);
+autoStart.fill(null);
+manualOT.fill(false);
+recomputeMileage();
+totals();
+save();
+}
+
+/* Input handling */
+function onInput(e){
+let el=e.target,id=el.id;
+if(!id||
+['pininput','site_name','site_zone'].includes(id))return;
+
+if(el.classList.contains('date')){
+formatDate(el);
+if(id==='f_wc')fillDates();
+}
+if(el.classList.contains('time')){
+formatTime(el);
+}
+
+let m=id.match(/^m_(start|fin|work|priv)_(\d)$/);
+if(m){
+let d=+m[2],kind=m[1];
+
+if(kind==='start'&&d>0){
+manualStart[d]=!!get(id);
+autoStart[d]=null;
+}
+
+if(kind==='fin'){
+let start=number(`m_start_${d}`);
+let finish=number(`m_fin_${d}`);
+let work=number(`m_work_${d}`);
+let priv=number(`m_priv_${d}`);
+
+if(good(start)&&good(finish)&&finish>=start){
+if(good(work)&&finish-start>=work){
+set(`m_priv_${d}`,finish-start-work);
+}else if(good(priv)&&finish-start>=priv){
+set(`m_work_${d}`,finish-start-priv);
+}
+}
+}
+recomputeMileage();
+}
+
+let r=id.match(/^r(\d+)_c(\d+)$/);
+if(r){
+let i=+r[1],c=+r[2];
+
+if(c===1){
+let match=allSites().find(s=>
+s.name.toLowerCase()===get(id).toLowerCase());
+if(match&&match.zone&&!get(`r${i}_c2`)){
+$(`r${i}_c2`).value=match.zone;
+}
+suggest(el,i);
+}
+
+if(c===8||c===9)rowOT(i);
+if(c===10)manualOT[i]=!!get(id);
+}
+
+totals();
+save();
+}
+
+/* Initialise */
+function init(){
+build();
+load();
+renderSites();
+
+$('unlock').onclick=verify;
+$('pininput').oninput=()=>{
+if(get('pininput').length===4)verify();
+};
+
+$('opentool').onclick=()=>view('app');
+$('back').onclick=()=>view('hub');
+
+$('lock').onclick=()=>{
+localStorage.removeItem(AKEY);
+view('pin');
+};
+
+$('changepin').onclick=()=>{
+let old=prompt('Current PIN:');
+if(old===null)return;
+if(old!==(localStorage.getItem(PKEY)||'1234')){
+return alert('Incorrect PIN');
+}
+let pin=prompt('New four-digit PIN:');
+if(/^\d{4}$/.test(pin||'')){
+localStorage.setItem(PKEY,pin);
+alert('PIN changed');
+}else if(pin!==null){
+alert('Enter four digits');
+}
+};
+
+$('pdf').onclick=()=>window.print();
+
+$('go2').onclick=()=>
+$('second').scrollIntoView({behavior:'smooth'});
+
+$('newweek').onclick=newWeek;
+
+$('managesites').onclick=()=>{
+$('sites').style.display=
+$('sites').style.display==='block'?'none':'block';
+};
+
+$('addsite').onclick=()=>{
+let n=get('site_name');
+let z=get('site_zone');
+if(!n)return;
+
+let arr=customSites().filter(x=>
+x.name.toLowerCase()!==n.toLowerCase());
+
+arr.push({name:n,zone:z});
+localStorage.setItem(ZKEY,JSON.stringify(arr));
+$('site_name').value='';
+$('site_zone').value='';
+renderSites();
+save();
+};
+
+$('export').onclick=backup;
+$('import').onclick=()=>$('file').click();
+$('file').onchange=e=>importBackup(e.target.files[0]);
+
+$('link').onclick=async()=>{
+save();
+clearTimeout(hashTimer);
+history.replaceState(null,'',
+'#'+encode(packageState()));
+try{
+await navigator.clipboard.writeText(location.href);
+$('link').textContent='Link Copied!';
+setTimeout(()=>
+$('link').textContent='Copy Sync Link',1700);
+}catch{
+prompt('Copy your sync link:',location.href);
+}
+};
+
+document.addEventListener('input',onInput);
+
+document.addEventListener('change',e=>{
+if(e.target.classList.contains('check')||
+e.target.id==='ot_mult'){
+totals();
+save();
+}
+});
+
+document.addEventListener('click',e=>{
+if(!e.target.closest('#suggest')&&
+!e.target.classList.contains('site')){
+$('suggest').style.display='none';
+}
+});
+
+document.querySelectorAll('.tick').forEach(e=>{
+e.onclick=()=>{
+e.value=e.value==='✓'?'':'✓';
+totals();
+save();
+};
+});
+
+window.addEventListener('resize',fit);
+window.addEventListener('hashchange',()=>{
+load();
+renderSites();
+});
+window.addEventListener('afterprint',fit);
+
+view(localStorage.getItem(AKEY)==='1'?'hub':'pin');
+}
+
+document.addEventListener('DOMContentLoaded',init);
 </script>
+</body>
+</html>
