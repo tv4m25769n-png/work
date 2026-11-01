@@ -1,20 +1,9 @@
-The code itself is valid HTML and JavaScript, so if the website isn't loading, it is almost certainly down to one of three things—plus there are a few layout and logic bugs inside that ChatGPT version that will cause issues as soon as you open it.
-Why It Won’t Load (And How to Fix It)
- * Stray Quotation Marks (“ and ”) in the File:
-   If you accidentally copied the opening “ before <!DOCTYPE html> or the closing ” after </html> into your index.html file, or if your hosting editor saved it as rich text instead of plain text, the page can fail to render properly. Make sure line 1 starts strictly with <!DOCTYPE html>.
- * Corrupted URL Hash or LocalStorage State:
-   Because the old version and this new version share the same localStorage key (nurture_ts_master_v3) and URL #hash structure, opening the site with an old bookmarked sync link can cause a conflict during init().
-   * Fix: Visit [https://work.martinlaw.me](https://work.martinlaw.me) directly without any #... at the end of the URL, and do a hard refresh in Safari (hold the refresh icon or clear site data for martinlaw.me).
- * Cloudflare / GitHub Pages Deployment Delay or Cache:
-   If you pushed this to GitHub Pages or Cloudflare Pages, check that the commit didn't fail and open it in a Private Tab to bypass Safari's aggressive caching.
-What Else Was Broken in That Code (Fixed Below)
-While inspecting the code you pasted, I also spotted several issues that would have messed up your form once it loaded:
- * Mileage Overwrite Bug: The onInput handler still had a block (if(kind==='fin')) that recalculated and overwrote your Work and Private miles whenever Finish changed. I have stripped that out so Work and Private are 100% locked as fact when you type them, and only add together to set Finish and carry over to tomorrow's Start.
- * Overtime Maths Bug: The weekday overtime formula (Math.min(480,b)-a-30) was subtracting an extra 30 minutes from 480 (08:00), which meant it only paid you overtime before 07:30 instead of 08:00. Your contract states 08:30–17:00 with a 30-minute unpaid commute buffer, meaning overtime starts before 08:00 (480 mins) and after 17:30 (1050 mins). That is now fixed.
- * Page 2 Footer Layout: Matched the exact bottom grid of your physical Page 2 photo (Page 2, Page 1, PRIVATE MILES, and TOTALS) and fixed the row heights so the table doesn't overflow the 297mm A4 sheet.
- * Bulletproof Startup: Wrapped all localStorage and DOMContentLoaded calls in safe fallbacks so even if Safari blocks storage or has old data, the app will always load.
-Fixed, Ready-to-Paste index.html
-Copy everything inside the box below (making sure no extra characters are at the top or bottom) and replace your index.html:
+This updated code replicates the physical Nurture Pest Control Page 1 and Page 2 sheets down to the exact row counts, column borders, and shaded footer block, with the "Copy Sync Link" button and URL hash code removed.
+What Was Matched to Your Paper Sheets:
+ * Page 1 Exact Structure: Features the NURTURE PEST CONTROL TIME SHEET title banner, Name / Week commencing / Team Leader boxes on the left, VEHICLE REG: and the 7-day mileage block on the right, the PLEASE CIRCLE DAYS COVERED FOR ON CALL ALLOWANCE row, 34 job rows, and the two-row R | EFK | F/U | C/O | T | Overtime / TOTALS footer.
+ * Page 2 Exact Structure: Starts directly with the Date | Site details | Zone number... header row (no title banner at the top), followed by 41 job rows, and the exact 5-row grey shaded footer block at the bottom with Page 2, Page 1, PRIVATE MILES (placed at the bottom of the shaded left block), and TOTALS.
+ * Full-Size A4 Pages & Smart Export: Both pages are rendered as full 210mm × 297mm A4 sheets on screen (so you can scroll down from Page 1 to Page 2) and when printing. If Page 2 has no entries on it, exporting to PDF only prints Page 1. Once you type into Page 2, exporting to PDF produces a 2-page PDF where both pages tally together.
+ * Copy Sync Link Removed: The button and all URL hash syncing code have been stripped out, leaving fast localStorage saving and JSON file Export/Import.
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -62,26 +51,30 @@ button{cursor:pointer}
 #suggest div{padding:8px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #475569}
 #suggest div:hover{background:#2563eb}
 
-/* Full A4 pages scaled to fit screen */
+/* Full A4 sheets scaled cleanly to fit any screen */
 #pages{width:100%;overflow:hidden}
-.slot{position:relative;width:210mm;height:297mm;margin:0 auto 16px}
-.paper{position:absolute;top:0;left:0;width:210mm;height:297mm;padding:8mm;background:white;transform-origin:top left;box-shadow:0 2px 8px rgba(0,0,0,0.18);overflow:hidden}
+.slot{position:relative;width:210mm;height:297mm;margin:0 auto 18px}
+.paper{position:absolute;top:0;left:0;width:210mm;height:297mm;padding:10mm 11mm;background:white;transform-origin:top left;box-shadow:0 3px 10px rgba(0,0,0,0.22);overflow:hidden}
 .paper table{width:100%;height:100%;border-collapse:collapse;table-layout:fixed;border:1.5px solid #000}
-.paper td,.paper th{border:1px solid #000;font-size:9.5px;padding:0 3px;overflow:hidden;white-space:nowrap;text-overflow:clip;vertical-align:middle}
+.paper td,.paper th{border:1px solid #000;font-size:9px;padding:0 3px;overflow:hidden;white-space:nowrap;text-overflow:clip;vertical-align:middle}
 .paper th{font-weight:bold;text-align:center}
-.paper .title{font-size:12px;font-weight:bold;text-align:center;height:22px}
-.paper .headbox{text-align:center;vertical-align:top;padding-top:3px;font-size:9.5px}
-.paper .headbox input{display:block;text-align:center;font-weight:bold;font-size:12px;height:32px;margin-top:2px}
-.paper input.cell{width:100%;height:100%;margin:0;padding:0 2px;border:0;background:transparent;color:black;font-size:10px;text-align:center;outline:none}
+.paper .title{font-size:11.5px;font-weight:bold;text-align:center;height:19px}
+.paper .headbox{text-align:center;vertical-align:top;padding-top:2px;font-size:9px}
+.paper .headbox input{display:block;text-align:center;font-weight:bold;font-size:11px;height:28px;margin-top:2px}
+.paper input.cell{width:100%;height:100%;margin:0;padding:0 2px;border:0;background:transparent;color:black;font-size:9.5px;text-align:center;outline:none}
 .paper input.cell.left{text-align:left}
 .paper input.cell:focus{background:#e0f2fe}
-.paper input.tick{cursor:pointer;font-size:13px;font-weight:bold}
+.paper input.tick{cursor:pointer;font-size:12px;font-weight:bold}
 .paper input.mismatch{color:#dc2626;font-weight:bold}
 .paper .b{font-weight:bold}
 .paper .r{font-weight:normal;text-align:center}
-.paper .shade{background:#d1d5db}
+.paper .shade{background:#a8a9ad}
+.paper td.no-b-top{border-top:0!important}
+.paper td.no-b-bot{border-bottom:0!important}
+.paper td.no-b-left{border-left:0!important}
+.paper td.no-b-right{border-right:0!important}
 .day-chk{display:none}
-.day-lbl{display:inline-block;font-weight:bold;cursor:pointer;padding:1px 5px;border-radius:50%;border:1.5px solid transparent}
+.day-lbl{display:inline-block;font-weight:bold;cursor:pointer;padding:0 4px;border-radius:50%;border:1.5px solid transparent}
 .day-chk:checked + .day-lbl{border-color:#000}
 
 @media(max-width:650px){
@@ -97,7 +90,7 @@ html,body{width:210mm!important;margin:0!important;padding:0!important;backgroun
 #app{display:block!important;padding:0!important;min-height:0!important;background:white!important}
 #pages{width:210mm!important;overflow:visible!important}
 .slot{width:210mm!important;height:296.5mm!important;margin:0!important;break-inside:avoid!important;page-break-inside:avoid!important}
-.paper{position:static!important;transform:none!important;width:210mm!important;height:296.5mm!important;box-shadow:none!important;padding:8mm!important}
+.paper{position:static!important;transform:none!important;width:210mm!important;height:296.5mm!important;box-shadow:none!important;padding:10mm 11mm!important}
 #second{break-before:page!important;page-break-before:always!important}
 #second.empty{display:none!important}
 .paper input::placeholder{color:transparent!important;-webkit-text-fill-color:transparent!important}
@@ -133,11 +126,10 @@ html,body{width:210mm!important;margin:0!important;padding:0!important;backgroun
 </div>
 <hr style="border:0;border-top:1px solid #374151;margin:8px 0">
 <div class="controls">
-<button type="button" class="btn blue" id="link">Copy Sync Link</button>
 <button type="button" class="btn blue" id="export">Export Save</button>
 <button type="button" class="btn blue" id="import">Import Save</button>
 <button type="button" class="btn purple" id="managesites">Manage Sites</button>
-<button type="button" class="btn" id="go2">Go to Page 2</button>
+<button type="button" class="btn" id="go2">Page 2</button>
 <button type="button" class="btn" id="newweek">New Week</button>
 <button type="button" class="btn green" id="pdf">Download / Save as PDF</button>
 </div>
@@ -210,15 +202,15 @@ function sDel(k){try{localStorage.removeItem(k);}catch(e){}}
 
 const DEFAULT_SITES=`Buckingham Palace|St James's Palace|Clarence House|Kensington Palace|Windsor Castle|Frogmore House|Hampton Court Palace|Tower of London|Horse Guards|MOD Main Building Whitehall|Old War Office Whitehall|Wellington Barracks|Hyde Park Barracks|Regent's Park Barracks|Chelsea Barracks|Royal Hospital Chelsea|Victoria Barracks Windsor|Combermere Barracks Windsor|Royal Artillery Barracks Woolwich|Woolwich Garrison|Napier Lines Woolwich|Cavalry Barracks Hounslow|Armoury House (HAC)|King's Troop RHA Woolwich|Latchmere House|Kneller Hall Twickenham|Northwood Headquarters|RMAS Sandhurst|Watchfield / Defence Academy Shrivenham|Denison Barracks Hermitage|Brock Barracks Reading|AWE Aldermaston|AWE Burghfield|Arborfield Garrison|Bramley Training Area|RAF Welford|Aldershot Garrison|Lille Barracks Aldershot|Mons Barracks Aldershot|Buller Barracks Aldershot|Travers Barracks Aldershot|Browning Barracks Aldershot|Gale Barracks Aldershot|Duchess of Kent Barracks Aldershot|Montgomery Lines Aldershot|St Omer Barracks Aldershot|Normandy Barracks Aldershot|Thornhill Barracks Aldershot|Wavell Barracks Aldershot|Minley Station|Gibraltar Barracks Minley|Minley Manor|Deepcut Barracks (Princess Royal Barracks)|Keogh Barracks Ash Vale|Pirbright Camp (ATC Pirbright)|Alexander Barracks Pirbright|Elizabeth Barracks Pirbright|Brunswick Camp Pirbright|Headley Court|RAF Odiham|RAF Oakhanger|Bordon & Longmoor Garrison|Longmoor Camp|Barton Stacey Camp|MOD Worthy Down|Sir John Moore Barracks Winchester|Southwick Park (HMS Dryad)|Middle Wallop (AACen)|Andover (Marlborough Lines / Army HQ)|Marchwood Military Port|HMNB Portsmouth|HMS Nelson Portsmouth|HMS Excellent Whale Island|HMS Collingwood Fareham|HMS Sultan Gosport|HMS Temeraire Portsmouth|Fort Blockhouse Gosport|DM Gosport|Horsea Island|Tipner Ranges|Browndown Camp|Thorney Island (Baker Barracks)|RAF Medmenham|Danesfield House Medmenham|RAF High Wycombe (Air Command)|RAF Halton|RAF Daws Hill|Wilton Park Beaconsfield|RAF Brize Norton|RAF Benson|Dalton Barracks Abingdon|Edward Brooks Barracks Abingdon|Bicester Garrison|St George's Barracks Bicester|St David's Barracks Bicester|MOD Bicester|RAF Weston-on-the-Green|Vauxhall Barracks Didcot|RAF Croughton|RAF Barford St John|Chicksands (DIFC)|RAF Henlow|Brompton Barracks Chatham|Chattenden Barracks|Lodge Hill Camp|Upnor Castle / Upper Upnor|Invicta Park Barracks Maidstone|Shorncliffe Garrison|Sir John Moore Barracks Shorncliffe|Risborough Barracks Shorncliffe|Burgoyne Barracks Shorncliffe|Somerset Barracks Shorncliffe|Napier Barracks Folkestone|St Martin's Plain Camp|Hythe Ranges|Lydd Ranges / Lydd Camp|Dover Duke of York's Royal Military School|Crowborough Training Camp|Newhaven Fort / Reserve Centre|Colchester Garrison|Merville Barracks Colchester|Goojera Barracks Colchester|Foynes Barracks Colchester|Carver Barracks Wimbish|MOD Shoeburyness (Foulness Island)|Fingringhoe Ranges|Tidworth Camp / Garrison|Aliwal Barracks Tidworth|Assaye Barracks Tidworth|Bhurtpore Barracks Tidworth|Candahar Barracks Tidworth|Delhi Barracks Tidworth|Jellalabad Barracks Tidworth|Lucknow Barracks Tidworth|Mooltan Barracks Tidworth|Swinton Barracks Perham Down|Bulford Camp / Garrison|Kiwi Barracks Bulford|Picton Barracks Bulford|Ward Barracks Bulford|Wing Barracks Bulford|Larkhill Garrison|Purvis Lines Larkhill|Horne Barracks Larkhill|Roberts Barracks Larkhill|Warminster Garrison|Battlesbury Barracks Warminster|Harman Lines Warminster|Waterloo Lines Warminster|Upavon Station (Trenchard Lines)|MOD Boscombe Down|Porton Down (Dstl)|MOD Lyneham|MOD Corsham|Azimghur Barracks Colerne|Buckley Barracks Hullavington|Bovington Camp|Allenby Barracks Bovington|Lulworth Camp|Stanley Barracks Bovington|Blandford Camp|RNAS Yeovilton|RM Poole (Hamworthy)|Wyvern Barracks Exeter|CTCRM Lympstone|RM Bickleigh|Royal Citadel Plymouth|HMNB Devonport|RNAS Culdrose|Imjin Barracks Innsworth|RAF Fairford|Duke of Gloucester Barracks South Cerney|Beachley Barracks Chepstow|RAF Northolt|RAF Wyton|RAF Alconbury|RAF Molesworth|Bassingbourn Barracks|Waterbeach Barracks|RAF Honington|RAF Barnham|RAF Lakenheath|RAF Mildenhall|RAF Feltwell|RAF Marham|Robertson Barracks Swanton Morley|Stanford Training Area (STANTA)|Gibraltar Barracks Bury St Edmunds|Wattisham Flying Station|Rock Barracks Woodbridge|RAF Wittering|Kendrew Barracks Cottesmore|St George's Barracks North Luffenham|Prince William of Gloucester Barracks Grantham|RAF Cranwell|RAF Barkston Heath|RAF Waddington|RAF Coningsby|RAF Digby|RAF Scampton|RAF Syerston|RAF Donna Nook|RAF Holbeach|Chetwynd Barracks Chilwell|Gamecock Barracks Bramcote|MOD Stafford (Beacon Barracks)|Whittington Barracks Lichfield (DMS)|MOD Donnington|RAF Cosford|RAF Shawbury|Clive Barracks Tern Hill|Copthorne Barracks Shrewsbury|Credenhill (Stirling Lines)|MOD Kineton|MOD St Athan|Brecon Barracks|Sennybridge Training Area|Castlemartin Camp|RAF Valley|Dale Barracks Chester|Weeton Barracks|Fulwood Barracks Preston|RAF Woodvale|Catterick Garrison|Marne Barracks Catterick|Bourlon Barracks Catterick|Gaza Barracks Catterick|Megiddo Lines Catterick|Somme Barracks Catterick|Vimy Barracks Catterick|Imphal Barracks York|Queen Elizabeth Barracks Strensall|Alanbrooke Barracks Topcliffe|Claro Barracks Ripon|Uniacke Barracks Harrogate|Normandy Barracks Leconfield|RAF Leeming|RAF Fylingdales|RAF Menwith Hill|RAF Staxton Wold|Albemarle Barracks Harlow Hill|RAF Boulmer|RAF Spadeadam`.split('|');
 
-const firstRows=24;
-const totalRows=54;
+// Exact row counts from physical Nurture sheets: 34 on Page 1, 41 on Page 2
+const firstRows=34;
+const totalRows=75;
 const fields=['r','efk','fu','co','t'];
 
 let manualStart=Array(7).fill(false);
 let autoStart=Array(7).fill(null);
 let manualOT=Array(totalRows).fill(false);
 let loading=false;
-let hashTimer;
 
 const get=id=>$(id)?.value?.trim()||'';
 const number=id=>get(id)===''?NaN:Number(get(id));
@@ -271,9 +263,9 @@ function input(id,classes='weekly',extra=''){
 }
 
 function jobHeader(){
-  return '<tr style="height:18px">'+
+  return '<tr>'+
   ['Date','Site details','Zone number','R','EFK','F/U','C/O','T','Start Time','Finish Time','Overtime']
-  .map((x,i)=>`<th style="${i<2?'text-align:left;padding-left:4px':''}">${x}</th>`).join('')+'</tr>';
+  .map((x,i)=>`<th style="${i<2?'text-align:left;padding-left:3px':''}">${x}</th>`).join('')+'</tr>';
 }
 
 function rows(a,b){
@@ -295,17 +287,18 @@ function rows(a,b){
 }
 
 function build(){
+  // PAGE 1: Exact replica of physical Page 1
   let h=`<div id="first" class="slot">
   <section class="paper"><table>${colgroup}
   <tr><td colspan="11" class="title">NURTURE PEST CONTROL TIME SHEET</td></tr>
-  <tr style="height:18px">
+  <tr>
     <td colspan="3" rowspan="3" class="headbox">
       Name${input('f_name','persist','value="Martin Law"')}
     </td>
     <td colspan="2" class="b">VEHICLE REG:</td>
     <td colspan="6">${input('f_reg','persist left b')}</td>
   </tr>
-  <tr style="height:18px">
+  <tr>
     <th></th><th>Date</th>
     <th colspan="2">Start Mileage</th>
     <th colspan="2">Finish Mileage</th>
@@ -314,7 +307,7 @@ function build(){
   </tr>`;
 
   for(let d=0;d<7;d++){
-    h+='<tr style="height:18px">';
+    h+='<tr>';
     if(d===1){
       h+=`<td colspan="3" rowspan="3" class="headbox">
         Week commencing
@@ -327,7 +320,7 @@ function build(){
         ${input('f_tl','persist')}
       </td>`;
     }
-    h+=`<th style="text-align:left;padding-left:4px">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]}</th>
+    h+=`<th style="text-align:left;padding-left:3px">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]}</th>
     <td>${input(`m_date_${d}`,'weekly date','inputmode="numeric" placeholder="DD/MM"')}</td>
     <td colspan="2">${input(`m_start_${d}`,'weekly mileage','inputmode="decimal"')}</td>
     <td colspan="2">${input(`m_fin_${d}`,'weekly mileage','inputmode="decimal"')}</td>
@@ -336,15 +329,15 @@ function build(){
     </tr>`;
   }
 
-  h+=`<tr style="height:18px">
+  h+=`<tr>
     <td colspan="5"></td>
     <td colspan="2" class="b">TOTALS</td>
     <td colspan="2">${input('m_tot_fin','b','readonly')}</td>
     <td>${input('m_tot_work','b','readonly')}</td>
     <td>${input('m_tot_priv','b','readonly')}</td>
   </tr>
-  <tr style="height:18px">
-    <td colspan="3" style="font-size:8px;text-align:center;font-weight:bold">
+  <tr>
+    <td colspan="3" style="font-size:7.5px;text-align:center;font-weight:bold">
       PLEASE CIRCLE DAYS COVERED FOR ON CALL ALLOWANCE
     </td>
     <td></td>
@@ -358,52 +351,52 @@ function build(){
   </tr>
   ${jobHeader()}
   ${rows(0,firstRows)}
-  <tr style="height:18px">
+  <tr>
     <td></td><td></td><td></td>
     <td class="r">R</td><td class="r">EFK</td><td class="r">F/U</td><td class="r">C/O</td><td class="r">T</td>
     <td></td><td></td><td class="r">Overtime</td>
   </tr>
-  <tr style="height:19px">
+  <tr>
     <td></td><td></td>
-    <td style="text-align:left;padding-left:4px">TOTALS</td>
+    <td style="text-align:left;padding-left:3px">TOTALS</td>
     ${fields.map(f=>`<td>${input(`tot_${f}_p1`,'b','readonly')}</td>`).join('')}
     <td></td><td></td>
     <td>${input('tot_ot_p1','b','readonly')}</td>
   </tr>
   </table></section></div>`;
 
+  // PAGE 2: Exact replica of physical Page 2 (no top title banner, 41 rows, shaded footer block)
   h+=`<div id="second" class="slot empty">
   <section class="paper"><table>
   ${colgroup}
   ${jobHeader()}
   ${rows(firstRows,totalRows)}
-  <tr style="height:18px">
-    <td colspan="2" rowspan="4" class="shade" style="vertical-align:bottom;text-align:right;padding-right:8px;font-weight:bold">PRIVATE MILES</td>
+  <tr>
+    <td colspan="2" rowspan="4" class="shade no-b-bot"></td>
     <td class="shade"></td>
     <td class="r">R</td><td class="r">EFK</td><td class="r">F/U</td><td class="r">C/O</td><td class="r">T</td>
-    <td colspan="2" rowspan="4" class="shade"></td>
+    <td colspan="2" rowspan="5" class="shade"></td>
     <td class="r">Overtime</td>
   </tr>
-  <tr style="height:18px">
-    <td style="text-align:left;padding-left:4px">Page 2</td>
+  <tr>
+    <td style="text-align:left;padding-left:3px">Page 2</td>
     ${fields.map(f=>`<td>${input(`tot_${f}_p2`,'b','readonly')}</td>`).join('')}
     <td>${input('tot_ot_p2','b','readonly')}</td>
   </tr>
-  <tr style="height:18px">
-    <td style="text-align:left;padding-left:4px">Page 1</td>
+  <tr>
+    <td style="text-align:left;padding-left:3px">Page 1</td>
     ${fields.map(f=>`<td>${input(`tot_${f}_p1_copy`,'b','readonly')}</td>`).join('')}
     <td>${input('tot_ot_p1_copy','b','readonly')}</td>
   </tr>
-  <tr style="height:18px" class="shade">
-    <td>${input('m_tot_priv_footer','b','readonly')}</td>
-    <td colspan="5" class="shade"></td>
+  <tr>
+    <td class="shade"></td>
+    <td class="shade"></td><td class="shade"></td><td class="shade"></td><td class="shade"></td><td class="shade"></td>
     <td class="shade"></td>
   </tr>
-  <tr style="height:19px">
-    <td colspan="2" class="shade"></td>
-    <td style="text-align:left;padding-left:4px">TOTALS</td>
+  <tr>
+    <td colspan="2" class="shade no-b-top" style="text-align:right;padding-right:14px;font-weight:bold">PRIVATE MILES</td>
+    <td style="text-align:left;padding-left:3px">TOTALS</td>
     ${fields.map(f=>`<td>${input(`tot_${f}`,'b','readonly')}</td>`).join('')}
-    <td colspan="2" class="shade"></td>
     <td>${input('tot_ot','b','readonly')}</td>
   </tr>
   </table></section></div>`;
@@ -494,7 +487,6 @@ function recomputeMileage(){
 
   set('m_tot_work',hw?w:NaN);
   set('m_tot_priv',hp?p:NaN);
-  set('m_tot_priv_footer',hp?p:NaN);
   set('m_tot_fin',last);
 }
 
@@ -560,7 +552,7 @@ function totals(){
     let key=c===10?'ot':fields[c-3];
     set(`tot_${key}_p1`,hasL?left:NaN);
     set(`tot_${key}_p2`,hasR?right:NaN);
-    set(`tot_${key}_p1_copy`,hasL?left:NaN);
+    set(`tot_${key}_p1_copy`,hasL&&hasR?left:NaN);
     set(`tot_${key}`,hasL||hasR?left+right:NaN);
     if(c===10)ot=left+right;
     else tasks+=left+right;
@@ -673,52 +665,16 @@ function snapshot(){
   };
 }
 
-function encode(o){
-  try{
-    let str=new TextEncoder().encode(JSON.stringify(o));
-    let bin='';
-    str.forEach(x=>bin+=String.fromCharCode(x));
-    return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  }catch(e){return '';}
-}
-
-function decode(s){
-  try{
-    let x=s.replace(/^#/,'').replace(/-/g,'+').replace(/_/g,'/');
-    while(x.length%4)x+='=';
-    return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(x),c=>c.charCodeAt(0))));
-  }catch(e){return null;}
-}
-
-function packageState(){
-  return {s:snapshot(),c:customSites(),o:sGet(CKEY,'')};
-}
-
 function save(){
   if(loading)return;
   try{
     sSet(SKEY,JSON.stringify(snapshot()));
-    clearTimeout(hashTimer);
-    hashTimer=setTimeout(()=>{
-      try{
-        let enc=encode(packageState());
-        if(enc)history.replaceState(null,'','#'+enc);
-      }catch(e){}
-    },250);
   }catch(e){}
 }
 
-function load(skipHash=false){
+function load(){
   loading=true;
   try{
-    if(!skipHash&&location.hash.length>2){
-      let x=decode(location.hash);
-      if(x?.s?.inputs){
-        sSet(SKEY,JSON.stringify(x.s));
-        if(Array.isArray(x.c))sSet(ZKEY,JSON.stringify(x.c));
-        if(typeof x.o==='string')sSet(CKEY,x.o);
-      }
-    }
     let s=JSON.parse(sGet(SKEY,'null')||'null');
     if(s?.inputs){
       document.querySelectorAll('input.cell:not([readonly]),input.tick,#ot_rate,#ot_mult').forEach(e=>{
@@ -774,7 +730,7 @@ function importBackup(f){
       if(typeof x.sites==='string')sSet(ZKEY,x.sites);
       if(typeof x.carry==='string')sSet(CKEY,x.carry);
       if(/^\d{4}$/.test(x.pin||''))sSet(PKEY,x.pin);
-      load(true);
+      load();
       renderSites();
       save();
       alert('Backup imported');
@@ -880,20 +836,6 @@ function init(){
   $('import').onclick=()=>$('file').click();
   $('file').onchange=e=>importBackup(e.target.files[0]);
 
-  $('link').onclick=async()=>{
-    save();
-    clearTimeout(hashTimer);
-    let enc=encode(packageState());
-    if(enc)history.replaceState(null,'','#'+enc);
-    try{
-      await navigator.clipboard.writeText(location.href);
-      $('link').textContent='Link Copied!';
-      setTimeout(()=>$('link').textContent='Copy Sync Link',1700);
-    }catch(e){
-      prompt('Copy your sync link:',location.href);
-    }
-  };
-
   document.addEventListener('input',onInput);
   document.addEventListener('change',e=>{
     if(e.target.classList.contains('check')||e.target.id==='ot_mult'){totals();save();}
@@ -906,7 +848,6 @@ function init(){
   });
 
   window.addEventListener('resize',fit);
-  window.addEventListener('hashchange',()=>{load();renderSites();});
   window.addEventListener('afterprint',fit);
 
   view(sGet(AKEY)==='1'?'hub':'pin');
