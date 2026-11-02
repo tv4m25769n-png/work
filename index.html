@@ -192,9 +192,6 @@ const firstRows=34;
 const totalRows=75;
 const fields=['r','efk','fu','co','t'];
 
-let manualStart=Array(7).fill(false);
-let autoStart=Array(7).fill(null);
-let manualFin=Array(7).fill(false);
 let manualOT=Array(totalRows).fill(false);
 let loading=false;
 
@@ -205,6 +202,23 @@ const round=n=>Math.round(n*10)/10;
 
 function set(id,n){
   if($(id))$(id).value=good(n)?String(Math.round(n*100)/100):'';
+}
+
+function setMileCell(id,n,isManual){
+  const el=$(id);
+  if(!el)return;
+  if(good(n)){
+    el.value=String(round(n));
+    el.dataset.manual=isManual?'1':'0';
+  }else{
+    el.value='';
+    el.dataset.manual='0';
+  }
+}
+
+function isMan(id){
+  const el=$(id);
+  return !!(el&&el.value.trim()!==''&&el.dataset.manual==='1');
 }
 
 function view(v){
@@ -437,42 +451,118 @@ function formatTime(el){
   el.value=s.length>=3?s.slice(0,2)+':'+s.slice(2):s;
 }
 
-/* Mileage: Work & Private are independent, and deleting any field cleanly clears/updates without fighting the cursor */
-function recomputeMileage(){
-  const activeId=document.activeElement?.id||'';
+/*
+  Smart Two-Way & Carry-Over Mileage Engine:
+  - Never overwrites the box currently being edited or cleared by the user.
+  - If Start & Finish are known and you type Private -> auto-fills Work (Finish - Start - Private).
+  - If Start & Finish are known and you type Work -> auto-fills Private (Finish - Start - Work).
+  - If you manually enter both Work & Private -> adds them to Start to update Finish, and carries Finish to tomorrow's Start.
+*/
+function solveMileageDay(d, editedKind){
+  const sId=`m_start_${d}`, fId=`m_fin_${d}`, wId=`m_work_${d}`, pId=`m_priv_${d}`;
 
-  if(!manualStart[0]&&get('m_start_0')===''&&sGet(CKEY)!==''&&activeId!=='m_start_0'){
-    set('m_start_0',Number(sGet(CKEY)));
-  }
-
-  for(let i=0;i<7;i++){
-    let startId=`m_start_${i}`;
-    let finId=`m_fin_${i}`;
-    let old=number(startId);
-    let prev=i>0?number(`m_fin_${i-1}`):NaN;
-
-    if(i>0){
-      if(!manualStart[i]&&activeId!==startId){
-        set(startId,prev);
-        autoStart[i]=good(prev)?prev:null;
-      }
-      $(startId).classList.toggle('mismatch',good(prev)&&good(number(startId))&&number(startId)<prev);
+  // 1. Carry over Start Mileage from previous day's Finish (unless user manually typed or cleared Start)
+  if(d>0 && editedKind!=='start'){
+    let prevFin=NaN;
+    for(let j=d-1;j>=0;j--){
+      let pf=number(`m_fin_${j}`);
+      if(good(pf)){prevFin=pf;break;}
     }
-
-    let start=number(startId);
-    let work=number(`m_work_${i}`);
-    let priv=number(`m_priv_${i}`);
-
-    if(good(start)&&(good(work)||good(priv))){
-      if(activeId!==finId){
-        set(finId,start+(good(work)?work:0)+(good(priv)?priv:0));
-        manualFin[i]=false;
-      }
-    }else if(!manualFin[i]&&activeId!==finId){
-      set(finId,NaN);
+    if(!isMan(sId) && $(sId)?.dataset.cleared!=='1'){
+      setMileCell(sId,prevFin,false);
     }
   }
 
+  let s=number(sId), f=number(fId), w=number(wId), p=number(pId);
+  let fMan=isMan(fId), wMan=isMan(wId), pMan=isMan(pId);
+
+  if(!good(s)){
+    if(!fMan && editedKind!=='fin') setMileCell(fId,NaN,false);
+    return;
+  }
+
+  if(editedKind==='fin'){
+    if(good(f) && f>=s){
+      let dist=round(f-s);
+      if(pMan && !wMan){
+        setMileCell(wId,Math.max(0,dist-p),false);
+      }else if(wMan && !pMan){
+        setMileCell(pId,Math.max(0,dist-w),false);
+      }else if(!wMan && !pMan){
+        setMileCell(wId,dist,false);
+        setMileCell(pId,NaN,false);
+      }
+    }else if(!good(f)){
+      if(!wMan) setMileCell(wId,NaN,false);
+      if(!pMan) setMileCell(pId,NaN,false);
+    }
+  }else if(editedKind==='priv'){
+    if(good(p)){
+      if(fMan && !wMan && good(f) && f>=s){
+        setMileCell(wId,Math.max(0,round(f-s-p)),false);
+      }else{
+        let workVal=good(w)?w:0;
+        setMileCell(fId,round(s+workVal+p),false);
+      }
+    }else{
+      // Private was deleted
+      if(fMan && !wMan && good(f) && f>=s){
+        setMileCell(wId,round(f-s),false);
+      }else if(wMan && good(w)){
+        setMileCell(fId,round(s+w),false);
+      }else if(!fMan){
+        setMileCell(fId,NaN,false);
+      }
+    }
+  }else if(editedKind==='work'){
+    if(good(w)){
+      if(fMan && !pMan && good(f) && f>=s){
+        let rem=round(f-s-w);
+        setMileCell(pId,rem>0?rem:NaN,false);
+      }else{
+        let privVal=good(p)?p:0;
+        setMileCell(fId,round(s+w+privVal),false);
+      }
+    }else{
+      // Work was deleted
+      if(fMan && !pMan && good(f) && f>=s){
+        setMileCell(pId,round(f-s),false);
+      }else if(pMan && good(p)){
+        setMileCell(fId,round(s+p),false);
+      }else if(!fMan){
+        setMileCell(fId,NaN,false);
+      }
+    }
+  }else{
+    // Start changed or cascading forward to subsequent days
+    if(wMan && pMan){
+      setMileCell(fId,round(s+w+p),false);
+    }else if(fMan && good(f) && f>=s){
+      let dist=round(f-s);
+      if(pMan && !wMan){
+        setMileCell(wId,Math.max(0,dist-p),false);
+      }else if(wMan && !pMan){
+        let rem=round(dist-w);
+        setMileCell(pId,rem>0?rem:NaN,false);
+      }else if(!wMan && !pMan){
+        setMileCell(wId,dist,false);
+      }
+    }else if(wMan || pMan){
+      setMileCell(fId,round(s+(good(w)?w:0)+(good(p)?p:0)),false);
+    }else if(!fMan){
+      setMileCell(fId,NaN,false);
+    }
+  }
+
+  // Highlight mismatch only if Start is lower than previous day's Finish
+  if(d>0){
+    let prev=number(`m_fin_${d-1}`);
+    let cur=number(sId);
+    $(sId).classList.toggle('mismatch',good(prev)&&good(cur)&&cur<prev);
+  }
+}
+
+function updateMileageTotals(){
   let w=0,p=0,last=NaN,hw=false,hp=false;
   for(let i=0;i<7;i++){
     let a=number(`m_work_${i}`);
@@ -482,11 +572,17 @@ function recomputeMileage(){
     if(good(b)){p+=b;hp=true;}
     if(good(f))last=f;
   }
-
   set('m_tot_work',hw?w:NaN);
   set('m_tot_priv',hp?p:NaN);
   set('m_tot_priv_footer',hp?p:NaN);
   set('m_tot_fin',last);
+}
+
+function recomputeMileageFrom(startDay, editedKind){
+  for(let i=startDay;i<7;i++){
+    solveMileageDay(i, i===startDay?editedKind:null);
+  }
+  updateMileageTotals();
 }
 
 /* Overtime per Clause 7: 08:30-17:00 core, 30m unpaid commute buffer (before 08:00 / after 17:30 = OT) */
@@ -644,17 +740,18 @@ function suggest(inp,r){
 }
 
 function snapshot(){
-  let inputs={},checks={};
+  let inputs={},checks={},manualCells=[],clearedCells=[];
   document.querySelectorAll('input.cell:not([readonly]),input.tick,#ot_rate,#ot_mult').forEach(e=>{
     if(e.id&&e.value!=='')inputs[e.id]=e.value;
+    if(e.dataset.manual==='1')manualCells.push(e.id);
+    if(e.dataset.cleared==='1')clearedCells.push(e.id);
   });
   document.querySelectorAll('.check').forEach(e=>checks[e.id]=e.checked);
   return {
     inputs,checks,
     meta:{
-      manualStarts:[...manualStart],
-      autoStarts:[...autoStart],
-      manualFins:[...manualFin],
+      manualCells,
+      clearedCells,
       manualOvertime:[...manualOT]
     }
   };
@@ -674,6 +771,8 @@ function load(){
     if(s?.inputs){
       document.querySelectorAll('input.cell:not([readonly]),input.tick,#ot_rate,#ot_mult').forEach(e=>{
         e.value=e.id==='f_name'?'Martin Law':e.id==='ot_rate'?'15.66':e.id==='ot_mult'?'1.5':'';
+        e.dataset.manual='0';
+        e.dataset.cleared='0';
       });
       document.querySelectorAll('.check').forEach(e=>e.checked=false);
       for(let [id,v] of Object.entries(s.inputs)){
@@ -685,12 +784,25 @@ function load(){
       for(let [id,v] of Object.entries(s.checks||{})){
         if($(id))$(id).checked=!!v;
       }
-      manualStart=Array.from({length:7},(_,i)=>!!s.meta?.manualStarts?.[i]);
-      autoStart=Array.from({length:7},(_,i)=>typeof s.meta?.autoStarts?.[i]==='number'?s.meta.autoStarts[i]:null);
-      manualFin=Array.from({length:7},(_,i)=>!!s.meta?.manualFins?.[i]);
+      if(Array.isArray(s.meta?.manualCells)){
+        s.meta.manualCells.forEach(id=>{if($(id))$(id).dataset.manual='1';});
+      }else{
+        // Backwards-compatible migration for existing saved data
+        for(let i=0;i<7;i++){
+          ['start','fin','work','priv'].forEach(k=>{
+            let id=`m_${k}_${i}`;
+            if(get(id)!=='')$(id).dataset.manual='1';
+          });
+        }
+      }
+      if(Array.isArray(s.meta?.clearedCells)){
+        s.meta.clearedCells.forEach(id=>{if($(id))$(id).dataset.cleared='1';});
+      }
       manualOT=Array.from({length:totalRows},(_,i)=>!!s.meta?.manualOvertime?.[i]);
+    }else if(sGet(CKEY)!==''){
+      setMileCell('m_start_0',Number(sGet(CKEY)),false);
     }
-    recomputeMileage();
+    updateMileageTotals();
     totals();
   }catch(e){}
   finally{loading=false;}
@@ -744,12 +856,18 @@ function newWeek(){
     if(good(number(`m_fin_${i}`))){last=number(`m_fin_${i}`);break;}
   }
   if(good(last))sSet(CKEY,String(last));
-  document.querySelectorAll('.weekly').forEach(e=>e.type==='checkbox'?e.checked=false:e.value='');
-  manualStart.fill(false);
-  autoStart.fill(null);
-  manualFin.fill(false);
+  document.querySelectorAll('.weekly').forEach(e=>{
+    if(e.type==='checkbox')e.checked=false;
+    else{
+      e.value='';
+      e.dataset.manual='0';
+      e.dataset.cleared='0';
+      e.classList.remove('mismatch');
+    }
+  });
   manualOT.fill(false);
-  recomputeMileage();
+  if(good(last))setMileCell('m_start_0',last,false);
+  updateMileageTotals();
   totals();
   save();
 }
@@ -768,14 +886,11 @@ function onInput(e){
 
   let m=id.match(/^m_(start|fin|work|priv)_(\d)$/);
   if(m){
-    let d=+m[2],kind=m[1];
-    if(kind==='start'){
-      manualStart[d]=get(id)!=='';
-      autoStart[d]=null;
-    }else if(kind==='fin'){
-      manualFin[d]=get(id)!=='';
-    }
-    recomputeMileage();
+    let kind=m[1], d=+m[2];
+    let hasText=get(id)!=='';
+    el.dataset.manual=hasText?'1':'0';
+    el.dataset.cleared=hasText?'0':'1';
+    recomputeMileageFrom(d, kind);
   }
 
   let r=id.match(/^r(\d+)_c(\d+)$/);
@@ -837,13 +952,6 @@ function init(){
   document.addEventListener('input',onInput);
   document.addEventListener('change',e=>{
     if(e.target.classList.contains('check')||e.target.id==='ot_mult'){totals();save();}
-  });
-  document.addEventListener('focusout',e=>{
-    if(e.target?.id&&/^m_(start|fin|work|priv)_\d$/.test(e.target.id)){
-      recomputeMileage();
-      totals();
-      save();
-    }
   });
   document.addEventListener('click',e=>{
     if(!e.target.closest('#suggest')&&!e.target.classList.contains('site'))$('suggest').style.display='none';
